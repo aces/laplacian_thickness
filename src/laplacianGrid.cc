@@ -67,9 +67,9 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
 void laplacianGrid::initialiseVolumes(integrator type) {
 
   // and construct the gradient volumes - using volume definition copy
-  this->gradientX = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
-  this->gradientY = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
-  this->gradientZ = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
+  this->gradientX = new mniVolume(this->volume, TRUE, NC_BYTE, TRUE);
+  this->gradientY = new mniVolume(this->volume, TRUE, NC_BYTE, TRUE);
+  this->gradientZ = new mniVolume(this->volume, TRUE, NC_BYTE, TRUE);
 
 
   // set their real ranges - safe here since I don't care about
@@ -294,7 +294,9 @@ void laplacianGrid::normaliseGradients() {
 	   * Nx = dx / [dx^2 + dy^2 / dz^2]^0.5
 	   */
   Real nx, ny, nz, dx, dy, dz;
-
+  //    this->gradientX->output("gradientnnX.mnc");
+  //    this->gradientY->output("gradientnnY.mnc");
+  //    this->gradientZ->output("gradientnnZ.mnc");
   for (int x=1; x < this->sizes[0]-1; x++) {
     for (int y=1; y < this->sizes[1]-1; y++) {
       for (int z=1; z < this->sizes[2]-1; z++) {
@@ -307,8 +309,8 @@ void laplacianGrid::normaliseGradients() {
           dz = this->gradientZ->getVoxel(x,y,z);
 
           nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
-          ny = dy / sqrt( pow(dy,2) + pow(dx,2) / pow(dz,2) );
-          nz = dz / sqrt( pow(dz,2) + pow(dy,2) / pow(dx,2) );
+          ny = dy / sqrt( pow(dy,2) + pow(dz,2) / pow(dx,2) );
+          nz = dz / sqrt( pow(dz,2) + pow(dx,2) / pow(dy,2)  );
 	  //          cout << "NX: " << nx << endl;
 	  //          cout << "NY: " << ny << endl;
 	  //          cout << "NZ: " << nz << endl;
@@ -322,9 +324,9 @@ void laplacianGrid::normaliseGradients() {
   }
 
   //  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
-  //  this->gradientX->output("gradientX.mnc");
-  //  this->gradientY->output("gradientY.mnc");
-  //  this->gradientZ->output("gradientZ.mnc");
+    this->gradientX->output("gradientX.mnc");
+    this->gradientY->output("gradientY.mnc");
+    this->gradientZ->output("gradientZ.mnc");
 }
 
 int laplacianGrid::evaluate( Real x, Real y, Real z ) {
