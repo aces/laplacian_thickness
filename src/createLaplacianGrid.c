@@ -386,10 +386,11 @@ Volume create_mantle (   char *input_volume_filename,
                     &white_volume, NULL ) != OK )
     return( 1 );
   grey_volume = copy_volume( white_volume );
+
   out_volume = copy_volume( white_volume );
 
   /* set the real range for the output volume */
-  set_volume_real_range(out_volume, 0, 10000);
+  set_volume_real_range(out_volume, 0, 20);
 
   (void) binary_object_mask( grey_surface_filename,
                              outside_value,
@@ -424,16 +425,16 @@ Volume create_mantle (   char *input_volume_filename,
         }
         else if (grey_value > 0.5 && white_value < 0.5) {
           /* in mantle */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 5000);
+          set_volume_real_value(out_volume, x, y, z, 0, 0, 5);
         }
         else if (grey_value < 0.5 && white_value < 0.5) {
           /* outside both surfaces */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 10000);
+          set_volume_real_value(out_volume, x, y, z, 0, 0, 10);
         }
         else if (grey_value < 0.5 && white_value > 0.5){
           /* shouldn't happen, as this means overlap - treat as mantle
              for now */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 2000);
+          set_volume_real_value(out_volume, x, y, z, 0, 0, 2);
         }
       }
     }

@@ -11,7 +11,7 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   this->outerValue = outerValue;
 
   // create the grid volume from file
-  this->fixedGrid = new mniVolume(mantleFile, 0.0, 0.0, 3, XYZdimOrder);
+  this->fixedGrid = new mniLabelVolume(mantleFile, 0.0, 0.0, 3, XYZdimOrder);
 
   // construct the volume from the mantle file, but signed
   this->volume = new mniVolume(mantleFile,
@@ -36,8 +36,9 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
   this->outerValue = outerValue;
 
   // take the volume_struct pointer as the grid
-  this->fixedGrid = new mniVolume(mantleVolume);
+  this->fixedGrid = new mniLabelVolume(mantleVolume);
   this->volume = new mniVolume(this->fixedGrid, FALSE, NC_SHORT, TRUE);
+  //  this->volume->setRealRange(0, 20);
 
   this->initialiseVolumes(type);
 }
@@ -184,10 +185,11 @@ float laplacianGrid::solveLaplace() {
     for (int v1=1; v1 < this->sizes[1]-1; v1++) {
       for (int v2=1; v2 < this->sizes[2]-1; v2++) {
         initialValue = this->fixedGrid->getVoxel(v0,v1,v2);
-	//	cout << initialValue << endl;
-        if (initialValue > (this->innerValue) &&
-            initialValue < (this->outerValue) ) {
-	  //cout << "indeed" << endl;
+	//if (initialValue > -1 )
+	//cout << initialValue << endl;
+        if (initialValue > (int)(this->innerValue) &&
+            initialValue < (int)(this->outerValue) ) {
+	  //	  cout << "indeed" << endl;
           newValue = (this->volume->getVoxel(v0+1, v1, v2) + 
                       this->volume->getVoxel(v0, v1+1, v2) +
                       this->volume->getVoxel(v0, v1, v2+1) +
@@ -302,14 +304,14 @@ void laplacianGrid::normaliseGradients() {
   }
 
   //  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
-//    this->gradientX->output("gradientX.mnc");
-//    this->gradientY->output("gradientY.mnc");
-//    this->gradientZ->output("gradientZ.mnc");
+  //  this->gradientX->output("gradientX.mnc");
+  //  this->gradientY->output("gradientY.mnc");
+  //  this->gradientZ->output("gradientZ.mnc");
 }
 
-Real laplacianGrid::evaluate( Real x, Real y, Real z ) {
+int laplacianGrid::evaluate( Real x, Real y, Real z ) {
   //  return this->fixedGrid->getInterpolatedVoxel(x,y,z);
-  return this->fixedGrid->getInterpolatedVoxel(x,y,z, -1);
+  return (int)this->fixedGrid->getVoxel((int)rint(x),(int)rint(y),(int)rint(z));
 }
     
 
@@ -334,7 +336,7 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   vector<Real>::iterator yIt = Yvector.begin();
   vector<Real>::iterator zIt = Zvector.begin();
 
-  Real evaluation = this->evaluate(Xvector[i],Yvector[i], Zvector[i]); 
+  int evaluation = this->evaluate(Xvector[i],Yvector[i], Zvector[i]); 
 
 
   if (this->verbosity >= 5) {
@@ -369,10 +371,12 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
             << Zvector[i] + dz * h << endl;
        cout << "I = " << i << endl << endl;
      }
+     else if (this->verbosity >= 2) {
+       //cout << "Towards outer: " << i << endl;
+     }
 
-     //    cout << i << endl;
     i++;
-    //    xIt++; yIt++; zIt++;
+
     // test for Not A Number
     if (Zvector[i] != Zvector[i] || 
         Xvector[i] != Xvector[i] || 
@@ -406,6 +410,8 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   }
 
   // move towards inner surface
+  i = 0;
+
   while (evaluation > this->innerValue) {
     // set the iterators to the beginning of the vectors
     xIt = Xvector.begin();
@@ -414,6 +420,10 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
 
     // always look at the beginning of vector
     this->getDerivatives(Xvector[0], Yvector[0], Zvector[0], dx, dy, dz);
+    
+//     cout << evaluation << endl;
+//     cout << Xvector[0] << " " << Yvector[0] << " " << Zvector[0] << endl;
+
     
     // insert at the beginning, using inverse of h
     (*this.*integrationStep)(Xvector, Yvector, Zvector, 
@@ -425,6 +435,12 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
     Yvector.insert(Yvector.begin(), newy);
     Zvector.insert(Zvector.begin(), newz);
 
+//     cout << Xvector[0] << " " << Yvector[0] << " " << Zvector[0] << endl;
+//     cout << dx << " " << dy << " " << dz << endl;
+//     cout << newx << " " << newy << " " << newz << endl ;
+//     cout << i << endl << endl;
+
+
     if (this->verbosity >= 5) {
       cout << "Interpolated values: " << dx << " " 
            << dy << " " << dz << endl;
@@ -433,6 +449,10 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
            << Zvector[0] + dz * h << endl;
       cout << "I = " << i << endl << endl;
     }
+    else if (this->verbosity >= 2 && i > 0 ) {
+      //cout << "Towards inner: " << i << endl;
+    }
+
 
     if (Xvector[0] != Xvector[0] || 
         Yvector[0] != Yvector[0] || 
@@ -448,10 +468,16 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
     }
     else {
       evaluation = this->evaluate(Xvector[0], Yvector[0], Zvector[0]);
-      if (Xvector.size() > 50)
+      //  cout << "after: " << evaluation << endl;
+      i++;
+
+      if (Xvector.size() > 50) {
+	//	cout << "true" << endl;
         evaluation = this->innerValue;
+      }
       
     }
+
     if (this->verbosity >= 5) {
       cout << "--------------------------" << endl << endl;
     }
@@ -545,7 +571,7 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
 
 void laplacianGrid::computeAllThickness(Real h) {
 
-  this->volume->setRealRange(0, 100);
+  //this->volume->setRealRange(0, 100);
 
   initialize_progress_report(&this->progressReport, FALSE, this->sizes[0]-1,
                              "Computing thickness streamlines");

@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     return (1);
   }
 
-  int outside_value = 10000;
+  int outside_value = 10;
   int inside_value = 0;
   char *grey_surface;
   char *white_surface;

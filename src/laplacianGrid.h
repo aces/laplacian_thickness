@@ -26,7 +26,7 @@ protected:
   //! Holds number of vertices in obj file
   int numVertices;
   //! Hold the fixed grid
-  mniVolume *fixedGrid;
+  mniLabelVolume *fixedGrid;
   //! Hold the gradient volumes
   mniVolume *gradientX, *gradientY, *gradientZ;
   //! For progress reports
@@ -73,7 +73,7 @@ protected:
   void getDerivatives( Real x, Real y, Real z,
 		       Real &dx, Real &dy, Real &dz );
 
-  Real evaluate( Real x, Real y, Real z );  
+  int evaluate( Real x, Real y, Real z );  
 public:
   //! constructor from corticalMantle
   //  laplacianGrid(corticalMantle *mantle);
