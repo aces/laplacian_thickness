@@ -28,6 +28,14 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   this->gradientY = new mniVolume(this->volume);
   this->gradientZ = new mniVolume(this->volume);
 
+  // set their real ranges - safe here since I don't care about
+  // the input volume
+  Real lower = -10000;
+  Real upper = 10000;
+  gradientX->setRealRange(lower, upper);
+  gradientY->setRealRange(lower, upper);
+  gradientZ->setRealRange(lower, upper);
+
   // initialise the sizes member
   this->sizes = new int[3];
   this->sizes = this->fixedGrid->getSizes();
@@ -93,15 +101,16 @@ void laplacianGrid::createGradients() {
         this->gradientY->setVoxel((this->volume->getVoxel(z,x,y+1) - 
                                    this->volume->getVoxel(z,x,y-1)) / 2,
                                   z,x,y);
-
+        /*
         if (this->gradientX->getVoxel(z,x,y) < 0) {
           cout << (this->volume->getVoxel(z,x+1,y) - 
                    this->volume->getVoxel(z,x-1,y)) / 2 
               << " "
               << this->gradientX->getVoxel(z,x,y) << endl;
         }
-
+        */
         // normalise the X gradient at that position
+
         topNumerator = this->gradientX->getVoxel(z,x,y);
         bottomNum1 = this->gradientX->getVoxel(z,x,y);
         bottomNum2 = this->gradientY->getVoxel(z,x,y);
@@ -113,17 +122,16 @@ void laplacianGrid::createGradients() {
 
         value = topNumerator / ((bottomNum1 + bottomNum2) / denom1);
 
-        //        value = this->gradientX->getVoxel(z,x,y) / 
-        //          sqrt(((pow(this->gradientX->getVoxel(z,x,y),2)) + 
-        //                pow(this->gradientY->getVoxel(z,x,y),2)) / 
-        //               (pow(this->gradientZ->getVoxel(z,x,y),2)));
-        //        this->gradientX->setVoxel(value, z,x,y);
+        /*
+          value = this->gradientX->getVoxel(z,x,y) / 
+          sqrt(((pow(this->gradientX->getVoxel(z,x,y),2)) + 
+          pow(this->gradientY->getVoxel(z,x,y),2)) / 
+          (pow(this->gradientZ->getVoxel(z,x,y),2)));
+        */
+        this->gradientX->setVoxel(value, z,x,y);
       }
     }
   }
-  cout << this->gradientX->getSignedFlag() << endl;
-  this->gradientX->setVoxel(-10,1,1,1);
-  cout << this->gradientX->getVoxel(1,1,1) << endl;
   this->gradientX->output("gradientX.mnc");
 }
 
