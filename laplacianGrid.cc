@@ -146,11 +146,12 @@ void laplacianGrid::normaliseGradients() {
       }
     }
   }
-
-  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
-  //  this->gradientX->output("gradientX.mnc");
-  //  this->gradientY->output("gradientY.mnc");
-  //  this->gradientZ->output("gradientZ.mnc");
+  /*
+    cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
+    this->gradientX->output("gradientX.mnc");
+    this->gradientY->output("gradientY.mnc");
+    this->gradientZ->output("gradientZ.mnc");
+  */
 }
 
 // use Eulers method, first towards one then towards the other surface
@@ -193,10 +194,20 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
 
     
     i++;
-    evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[i]),
+    // test for Not A Number
+    if (Zvector[i] != Zvector[i] || 
+        Xvector[i] != Xvector[i] || 
+        Yvector[i] != Yvector[i]) {
+      cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      // end search
+      return;
+      evaluation = this->outerValue;
+    }
+    else {
+      evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[i]),
                                            (int)rint(Xvector[i]),
                                            (int)rint(Yvector[i]));
-
+    
     // test for runaway resource
     if (Xvector.size() > 50)
       evaluation = this->outerValue;
@@ -220,7 +231,7 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
          << "Int test: " << rint(5.4) 
          << endl << endl;
     */
-    
+    }
   }
 
   // move towards inner surface
@@ -230,6 +241,7 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
     yIt = Yvector.begin();
     zIt = Zvector.begin();
 
+    // test for NaN
     // always look at the beginning of vector
     Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[0],
                                                         Xvector[0],
@@ -240,20 +252,29 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
     Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[0],
                                                         Xvector[0],
                                                         Yvector[0]);
-
+    
     // insert at the beginning, using inverse of h
     Xvector.insert(xIt, Xvector[0] + Xvalue * (h * -1));
     Yvector.insert(yIt, Yvector[0] + Yvalue * (h * -1));
     Zvector.insert(zIt, Zvector[0] + Zvalue * (h * -1));
-
-    evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[0]),
-                                           (int)rint(Xvector[0]),
-                                           (int)rint(Yvector[0]));
-    if (Xvector.size() > 50)
-      evaluation = this->innerValue;
-
-  }
     
+    if (Zvector[0] != Zvector[0] || 
+        Xvector[0] != Xvector[0] || 
+        Yvector[0] != Yvector[0]) {
+      cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      return;
+      evaluation = this->innerValue;
+    }
+    else {
+
+      evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[0]),
+                                             (int)rint(Xvector[0]),
+                                             (int)rint(Yvector[0]));
+      if (Xvector.size() > 50)
+        evaluation = this->innerValue;
+      
+    }
+  }
 }
   
 Real laplacianGrid::streamLength(vector<Real> &Xvector,
@@ -276,12 +297,17 @@ void laplacianGrid::computeAllThickness() {
 
   this->volume->setRealRange(0, 100);
 
+  initialize_progress_report(&this->progressReport, FALSE, this->sizes[0]-1,
+                             "Computing thickness streamlines");
+
   for (int v1=1; v1 < this->sizes[0]-1; v1++) {
     for (int v2=1; v2 < this->sizes[1]-1; v2++) {
       for (int v3=1; v3 < this->sizes[2]-1; v3++) {
         //        if (this->fixedGrid->getVoxel(v1, v2, v3) != this->innerValue &&
         //            this->fixedGrid->getVoxel(v1, v2, v3) != this->outerValue) {
-        if (this->fixedGrid->getVoxel(v1, v2, v3) == 5000) {
+        if (this->fixedGrid->getVoxel(v1, v2, v3) < 6000 && 
+            this->fixedGrid->getVoxel(v1, v2, v3) > 4000) {
+          //          cout << v1 << " " << v2 << " " << v3 << endl;
           vector<Real> xv, yv, zv;
           this->createStreamline(v2, v3, v1, 1, xv, yv, zv);
           Real length = this->streamLength(xv, yv, zv);
@@ -295,7 +321,9 @@ void laplacianGrid::computeAllThickness() {
         }
       }
     }
+    update_progress_report(&this->progressReport, v1);
   }
+  terminate_progress_report(&this->progressReport);
 }
 
         
@@ -306,4 +334,5 @@ void laplacianGrid::output(char *filename) {
   this->volume->output(filename);
 }
     
+
 

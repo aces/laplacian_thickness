@@ -345,18 +345,18 @@ int main ( int argc, char *argv[] )
   int            sizes[MAX_DIMENSIONS];
   int            x,y,z;
   Real           white_value, grey_value;
+
+  outside_value = 0;
+  inside_value = 1;
   
   initialize_argument_processing( argc, argv );
 
   if ( !get_string_argument( NULL, &input_volume_filename ) ||
        !get_string_argument( NULL, &grey_surface_filename ) ||
        !get_string_argument( NULL, &white_surface_filename ) ||
-       !get_string_argument( NULL, &output_file_name ) ||
-       !get_real_argument( 0, &outside_value ) ||
-       !get_real_argument( 0, &inside_value ) ) {
-    print_error("Usage: %s in_volume grey_surface.obj white_surface.obj\n",
-                argv[0] );
-    print_error("    output.mnc outside_value inside_value\n");
+       !get_string_argument( NULL, &output_file_name )
+       ) {
+    print_error("Usage: %s in_volume grey_surface.obj white_surface.obj output.mnc \n", argv[0] );
     return( 1 );
   }
 
@@ -387,28 +387,38 @@ int main ( int argc, char *argv[] )
 
   get_volume_sizes( out_volume, sizes );
 
+  /*
+  output_volume("white.mnc", NC_BYTE, FALSE, 0.0, 0.0,
+                white_volume, "", NULL );
+
+  output_volume("grey.mnc", NC_BYTE, FALSE, 0.0, 0.0,
+                grey_volume, "", NULL );
+  */
+
+
   /* now test for various possible conditions */
   for_less( x, 0, sizes[0] ) {
     for_less( y, 0, sizes[1] ) {
       for_less( z, 0, sizes[2] ) {
         grey_value = get_volume_real_value(grey_volume, x, y, z, 0, 0);
         white_value = get_volume_real_value(white_volume, x, y, z, 0, 0);
-        if (grey_value == 1 && white_value == 1) {
+        /*        printf("Grey: %f White: %f\n", grey_value, white_value);*/
+        if (grey_value > 0.5 && white_value > 0.5 ) {
           /* inside both surfaces */
           set_volume_real_value(out_volume, x, y, z, 0, 0, 0);
         }
-        else if (grey_value == 1 && white_value == 0) {
+        else if (grey_value > 0.5 && white_value < 0.5) {
           /* in mantle */
           set_volume_real_value(out_volume, x, y, z, 0, 0, 5000);
         }
-        else if (grey_value == 0 && white_value == 0) {
+        else if (grey_value < 0.5 && white_value < 0.5) {
           /* outside both surfaces */
           set_volume_real_value(out_volume, x, y, z, 0, 0, 10000);
         }
-        else {
+        else if (grey_value < 0.5 && white_value > 0.5){
           /* shouldn't happen, as this means overlap - treat as mantle
              for now */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 5000);
+          set_volume_real_value(out_volume, x, y, z, 0, 0, 2000);
         }
       }
     }
@@ -418,3 +428,5 @@ int main ( int argc, char *argv[] )
                 out_volume, "", NULL );
 
 }
+
+

@@ -19,6 +19,8 @@ protected:
   mniLabelVolume *fixedGrid;
   //! Hold the gradient volumes
   mniVolume *gradientX, *gradientY, *gradientZ;
+  //! For progress reports
+  progress_struct progressReport;
   
 public:
   //! constructor from corticalMantle
