@@ -11,7 +11,7 @@ extern "C" {
 #include "volume_io.h"
 #include "bicpl.h"
 }
-#include "bicLabelVolume.h"
+#include "mniLabelVolume.h"
 
 // Regular includes
 #include <iostream.h>
@@ -27,7 +27,7 @@ extern "C" {
   be extendable to more general uses as well
 */
 
-class corticalMantle : public bicLabelVolume {
+class corticalMantle : public mniLabelVolume {
 private:
   //! Hold the filenames of the two surfaces
   STRING outerSurface, innerSurface;

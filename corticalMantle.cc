@@ -9,7 +9,7 @@ corticalMantle::corticalMantle( STRING outerSurfaceFile,
                                 STRING innerSurfaceFile,
                                 STRING outputFile,
                                 STRING clsFile ) 
-  : bicLabelVolume(clsFile, 1, 3, ZXYdimOrder, NC_LONG, NULL) {
+  : mniLabelVolume(clsFile, 1, 3, ZXYdimOrder, NC_BYTE, NULL) {
 
   this->filename = outputFile;
   this->clsFile = clsFile;
@@ -27,11 +27,13 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
                                          int innerValue=1,
                                          int outerValue=2) {
 
-  bicLabelVolume  *inner, *outer;
+  mniLabelVolume  *inner, *outer;
   File_formats    format;
   int             obj, n_objects;
   object_struct   **objectsInner, **objectsOuter;
   int            value;
+
+  cout << "Using distance of: " << maxDistance << endl;
 
   // set the class variables
   this->greyValue = outerValue;
@@ -39,8 +41,8 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
   this->overlapValue = outerValue + innerValue;
 
   // create the two label volumes
-  inner = new bicLabelVolume(this);
-  outer = new bicLabelVolume(this);
+  inner = new mniLabelVolume(this);
+  outer = new mniLabelVolume(this);
   inner->setAllVoxels(0);
   outer->setAllVoxels(0);
 

@@ -80,7 +80,7 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 
 smr_CHECK_LIB(oobicpl,,
-[BIC Programming library 2], int, bicVolume.h,
+[BIC Programming library 2], int, mniVolume.h,
 [$bicpl_LIBS $volumeio_LIBS $minc_LIBS $netcdf_LIBS -lm],[$bicpl_CFLAGS $netcdf_CFLAGS $minc_CFLAGS $volumeio_CFLAGS])
 if test "$oobicpl_LIBS" = ""; then
     AC_MSG_ERROR([Required library oobicpl not found!])
