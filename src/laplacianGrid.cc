@@ -23,6 +23,10 @@ laplacianGrid::laplacianGrid(char* mantleFile,
                                TRUE,
                                TRUE,
                                NULL);
+
+  // initialise the sizes member
+  this->sizes = new int[3];
+  this->sizes = this->fixedGrid->getSizes();
   
   this->initialiseVolumes(type);
 }
@@ -37,8 +41,24 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
 
   // take the volume_struct pointer as the grid
   this->fixedGrid = new mniLabelVolume(mantleVolume);
-  this->volume = new mniVolume(this->fixedGrid, FALSE, NC_SHORT, TRUE);
-  //  this->volume->setRealRange(0, 20);
+  //this->fixedGrid->output("grid.mnc");
+  this->volume = new mniVolume(this->fixedGrid, TRUE, NC_SHORT, TRUE);
+  this->volume->setRealRange(0, 20);
+
+  // initialise the sizes member
+  this->sizes = new int[3];
+  this->sizes = this->fixedGrid->getSizes();
+
+  // volume definition copy won't copy values, while a direct copy
+  // will keep the original data-type. So this is the ugly compromise.
+  for (int v0=0; v0 < this->sizes[0]; v0++) {
+    for (int v1=0; v1 < this->sizes[1]; v1++) {
+      for (int v2=0; v2 < this->sizes[2]; v2++) {
+        this->volume->setVoxel( this->fixedGrid->getVoxel(v0, v1, v2),
+                                v0, v1, v2);
+      }
+    }
+  }
 
   this->initialiseVolumes(type);
 }
@@ -60,9 +80,6 @@ void laplacianGrid::initialiseVolumes(integrator type) {
   gradientY->setRealRange(lower, upper);
   gradientZ->setRealRange(lower, upper);
 
-  // initialise the sizes member
-  this->sizes = new int[3];
-  this->sizes = this->fixedGrid->getSizes();
 
   // set default verbosity to 0
   this->verbosity = 0;
@@ -185,17 +202,18 @@ float laplacianGrid::solveLaplace() {
     for (int v1=1; v1 < this->sizes[1]-1; v1++) {
       for (int v2=1; v2 < this->sizes[2]-1; v2++) {
         initialValue = this->fixedGrid->getVoxel(v0,v1,v2);
-	//if (initialValue > -1 )
-	//cout << initialValue << endl;
+        // if (initialValue > -1 )
+        //cout << initialValue << endl;
         if (initialValue > (int)(this->innerValue) &&
             initialValue < (int)(this->outerValue) ) {
-	  //	  cout << "indeed" << endl;
+	  	  //cout << "indeed" << initialValue << endl;
           newValue = (this->volume->getVoxel(v0+1, v1, v2) + 
                       this->volume->getVoxel(v0, v1+1, v2) +
                       this->volume->getVoxel(v0, v1, v2+1) +
                       this->volume->getVoxel(v0-1, v1, v2) +
                       this->volume->getVoxel(v0, v1-1, v2) +
                       this->volume->getVoxel(v0, v1, v2-1) ) / 6;
+          //cout << newValue << endl;
           this->volume->setVoxel(newValue, v0, v1, v2);
           fieldEnergy += sqrt(newValue);
 	  //	  cout << fieldEnergy << endl;

@@ -382,7 +382,7 @@ Volume create_mantle (   char *input_volume_filename,
   
 
   if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
-                    NC_BYTE, FALSE, 0.0, 0.0, TRUE, 
+                    NC_BYTE, FALSE, 0.0, 10.0, TRUE, 
                     &white_volume, NULL ) != OK )
     return( 1 );
   grey_volume = copy_volume( white_volume );
@@ -390,7 +390,7 @@ Volume create_mantle (   char *input_volume_filename,
   out_volume = copy_volume( white_volume );
 
   /* set the real range for the output volume */
-  set_volume_real_range(out_volume, 0, 20);
+  set_volume_real_range(out_volume, 0, 10); 
 
   (void) binary_object_mask( grey_surface_filename,
                              outside_value,
