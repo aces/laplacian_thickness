@@ -35,5 +35,5 @@ AC_MSG_RESULT([yes])
 
 AC_LANG_POP
 
-AC_CONFIG_FILES([Makefile src/Makefile scripts/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile scripts/Makefile linear_thickness/Makefile])
 AC_OUTPUT

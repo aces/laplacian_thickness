@@ -66,7 +66,7 @@ float laplacianGrid::solveLaplace() {
                       this->volume->getVoxel(v0, v1-1, v2) +
                       this->volume->getVoxel(v0, v1, v2-1) ) / 6;
           this->volume->setVoxel(newValue, v0, v1, v2);
-	  fieldEnergy += sqrt(newValue);
+          fieldEnergy += sqrt(newValue);
         }
       }
     }

@@ -1,0 +1,5 @@
+2002-04-20	Jason Lerch	<jason@bic.mni.mcgill.ca>
+	* started the ChangeLog (finally)
+	* added the linear_thickness directory
+	* started a layered linear thickness implementation
+	
