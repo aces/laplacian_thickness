@@ -40,6 +40,9 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   // initialise the sizes member
   this->sizes = new int[3];
   this->sizes = this->fixedGrid->getSizes();
+
+  // set default verbosity to 0
+  this->verbosity = 0;
 }
 
 // one iteration of solving laplace's equation
@@ -155,7 +158,7 @@ void laplacianGrid::normaliseGradients() {
 }
 
 // use Eulers method, first towards one then towards the other surface
-void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
+void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
                                      vector<Real> &Xvector, 
                                      vector<Real> &Yvector,
                                      vector<Real> &Zvector) {
@@ -175,42 +178,67 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
                                               (int)Yvector[i]); 
 
 
+  if (this->verbosity >= 5) {
+    cout << "Start of createStreamline function." << endl;
+    cout << "First evaluation: " << evaluation << endl;
+    cout << "Initial vectors (xyz): " << Xvector[0] << " "
+         << Yvector[0] << " " << Zvector[0] << endl;
+    cout << "Using H of: " << h << endl << endl;
+  }
+
   // move towards outside surface first
   while (evaluation < this->outerValue) {
 
     Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[i],
                                                         Xvector[i],
-                                                        Yvector[i]);
+                                                        Yvector[i],
+                                                        0);
     Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[i],
                                                         Xvector[i],
-                                                        Yvector[i]);
+                                                        Yvector[i],
+                                                        0);
     Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[i],
                                                         Xvector[i],
-                                                        Yvector[i]);
+                                                        Yvector[i],
+                                                        0);
 
     Xvector.push_back (Xvector[i] + Xvalue * h);
     Yvector.push_back (Yvector[i] + Yvalue * h);
     Zvector.push_back (Zvector[i] + Zvalue * h);
 
+    if (this->verbosity >= 5) {
+      cout << "Interpolated values: " << Xvalue << " " 
+           << Yvalue << " " << Zvalue << endl;
+      cout << "Values pushed back: " << Xvector[i] + Xvalue * h  << " "
+           << Yvector[i] + Yvalue * h << " "
+           << Zvector[i] + Zvalue * h << endl;
+      cout << "I = " << i << endl << endl;
+    }
     
     i++;
     // test for Not A Number
     if (Zvector[i] != Zvector[i] || 
         Xvector[i] != Xvector[i] || 
         Yvector[i] != Yvector[i]) {
-      cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      if (this->verbosity >= 1) {
+        cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+        cerr << "with values: " << Xvector[i] << " " << Yvector[i] << " "
+             << Zvector[i] << endl;
+      }
       // end search
       return;
-      evaluation = this->outerValue;
     }
     else {
       evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[i]),
                                            (int)rint(Xvector[i]),
                                            (int)rint(Yvector[i]));
     
-    // test for runaway resource
-    if (Xvector.size() > 50)
-      evaluation = this->outerValue;
+      if (this->verbosity >=5 ) {
+        cout << "Evaluation function: " << evaluation << endl << endl;
+      }
+      // test for runaway resource
+      if (Xvector.size() > 50)
+        evaluation = this->outerValue;
 
     // debugging code:
     /*
@@ -232,6 +260,13 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
          << endl << endl;
     */
     }
+    if (this->verbosity >= 5) {
+      cout << "--------------------------" << endl << endl;
+    }
+  }
+
+  if (this->verbosity >= 5) {
+    cout << "Starting descent towards inner surface." << endl;
   }
 
   // move towards inner surface
@@ -245,25 +280,39 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
     // always look at the beginning of vector
     Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[0],
                                                         Xvector[0],
-                                                        Yvector[0]);
+                                                        Yvector[0],
+                                                        0);
     Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[0],
                                                         Xvector[0],
-                                                        Yvector[0]);
+                                                        Yvector[0],
+                                                        0);
     Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[0],
                                                         Xvector[0],
-                                                        Yvector[0]);
+                                                        Yvector[0],
+                                                        0);
     
     // insert at the beginning, using inverse of h
     Xvector.insert(xIt, Xvector[0] + Xvalue * (h * -1));
     Yvector.insert(yIt, Yvector[0] + Yvalue * (h * -1));
     Zvector.insert(zIt, Zvector[0] + Zvalue * (h * -1));
+
+    if (this->verbosity >= 5) {
+      cout << "Interpolated values: " << Xvalue << " " 
+           << Yvalue << " " << Zvalue << endl;
+      cout << "Values pushed back: " << Xvector[0] + Xvalue * h  << " "
+           << Yvector[0] + Yvalue * h << " "
+           << Zvector[0] + Zvalue * h << endl;
+      cout << "I = " << i << endl << endl;
+    }
+
     
     if (Zvector[0] != Zvector[0] || 
         Xvector[0] != Xvector[0] || 
         Yvector[0] != Yvector[0]) {
-      cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      if (this->verbosity >=1 ) {
+        cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      }
       return;
-      evaluation = this->innerValue;
     }
     else {
 
@@ -273,6 +322,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
       if (Xvector.size() > 50)
         evaluation = this->innerValue;
       
+    }
+    if (this->verbosity >= 5) {
+      cout << "--------------------------" << endl << endl;
     }
   }
 }
@@ -293,7 +345,7 @@ Real laplacianGrid::streamLength(vector<Real> &Xvector,
   return length;
 }
 
-void laplacianGrid::computeAllThickness() {
+void laplacianGrid::computeAllThickness(Real h) {
 
   this->volume->setRealRange(0, 100);
 
@@ -309,7 +361,7 @@ void laplacianGrid::computeAllThickness() {
             this->fixedGrid->getVoxel(v1, v2, v3) > 4000) {
           //          cout << v1 << " " << v2 << " " << v3 << endl;
           vector<Real> xv, yv, zv;
-          this->createStreamline(v2, v3, v1, 1, xv, yv, zv);
+          this->createStreamline(v2, v3, v1, h, xv, yv, zv);
           Real length = this->streamLength(xv, yv, zv);
           this->volume->setVoxel(length ,v1, v2, v3);
           //          cout << v1 << " " << v2 << " " << v3 << " " << length 

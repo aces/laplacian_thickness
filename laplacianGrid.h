@@ -21,6 +21,8 @@ protected:
   mniVolume *gradientX, *gradientY, *gradientZ;
   //! For progress reports
   progress_struct progressReport;
+  //! Hold the level of verbosity
+  int verbosity;
   
 public:
   //! constructor from corticalMantle
@@ -44,7 +46,7 @@ public:
   void createThicknessMetric();
   //! create a streamline at given voxel
   void testFunction(vector<Real> &t);
-  void createStreamline(int x0, int y0, int z0, int h, 
+  void createStreamline(int x0, int y0, int z0, Real h, 
                         vector<Real> &Xvector,
                         vector<Real> &Yvector,
                         vector<Real> &Zvector);
@@ -53,11 +55,12 @@ public:
                     vector<Real> &Yvector,
                     vector<Real> &Zvector);
 
-  void computeAllThickness();
+  void computeAllThickness(Real h);
   //  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume
   void output(char* filename);
-
+  //! set the level of verbosity
+  void setVerbosity(int newVerbosity) { this->verbosity = newVerbosity; };
 
 
 };
