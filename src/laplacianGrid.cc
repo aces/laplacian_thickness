@@ -74,8 +74,8 @@ void laplacianGrid::initialiseVolumes(integrator type) {
 
   // set their real ranges - safe here since I don't care about
   // the input volume
-  Real lower = -1;
-  Real upper = 1;
+  Real lower = -10;
+  Real upper = 10;
   gradientX->setRealRange(lower, upper);
   gradientY->setRealRange(lower, upper);
   gradientZ->setRealRange(lower, upper);
@@ -308,9 +308,9 @@ void laplacianGrid::normaliseGradients() {
           dy = this->gradientY->getVoxel(x,y,z);
           dz = this->gradientZ->getVoxel(x,y,z);
 
-          nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
-          ny = dy / sqrt( pow(dy,2) + pow(dz,2) / pow(dx,2) );
-          nz = dz / sqrt( pow(dz,2) + pow(dx,2) / pow(dy,2)  );
+          nx = dx / sqrt( pow(dx,2) + pow(dy,2) + pow(dz,2) );
+          ny = dy / sqrt( pow(dy,2) + pow(dz,2) + pow(dx,2) );
+          nz = dz / sqrt( pow(dz,2) + pow(dx,2) + pow(dy,2) );
 	  //          cout << "NX: " << nx << endl;
 	  //          cout << "NY: " << ny << endl;
 	  //          cout << "NZ: " << nz << endl;
@@ -324,9 +324,9 @@ void laplacianGrid::normaliseGradients() {
   }
 
   //  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
-    this->gradientX->output("gradientX.mnc");
-    this->gradientY->output("gradientY.mnc");
-    this->gradientZ->output("gradientZ.mnc");
+  //    this->gradientX->output("gradientX.mnc");
+  //    this->gradientY->output("gradientY.mnc");
+  //    this->gradientZ->output("gradientZ.mnc");
 }
 
 int laplacianGrid::evaluate( Real x, Real y, Real z ) {
