@@ -9,8 +9,9 @@ use Getopt::Tabular;
 use MNI::Spawn;
 use MNI::Startup;
 use MNI::FileUtilities qw(test_file check_output_dirs);
+use MNI::DataDir;
 
-my ($stepValue);
+my ($stepValue, $icbmModel);
 my ($inputVolume, $grey, $white, $outputFile);
 my ($tmpVolume);
 my ($help, $usage);
@@ -18,8 +19,16 @@ my (@mincinfoOutput);
 
 &Initialise;
 
-# resample the input file if desired
-if ($stepValue) {
+# use one of the icbm models as the input volume
+if ($icbmModel) {
+  my $ModelDir = MNI::DataDir::dir('ICBM');
+  my @files = ("icbm_template_${icbmModel}mm.mnc");
+  MNI::DataDir::check_data($ModelDir, \@files);
+  $tmpVolume = "$ModelDir/icbm_template_${icbmModel}mm.mnc";
+
+}
+# otherwise resample the input file if desired
+elsif ($stepValue and $inputVolume) {
     # find the current step sizes and dimlengths
     my @tmp;
     Spawn(['mincinfo', $inputVolume], stdout => \@mincinfoOutput);
@@ -40,8 +49,13 @@ if ($stepValue) {
     }
     Spawn(['mincresample', $inputVolume, $tmpVolume]);
 }
-else {
+# or just take the input file as is
+elsif ($inputVolume) {
     $tmpVolume = $inputVolume;
+}
+# or die if none of the above matched
+else {
+  die "ERROR: you must specify either -like <filename> or -icbm_model <sampling>\n";
 }
 
 # now generate the grid
@@ -60,13 +74,17 @@ sub Initialise {
     my @argTbl = 
 	(@DefaultArgs,
 	 ["Programme specific options:", "section"],
+     ["-like", "string", 1, \$inputVolume,
+      "Volume to base grid on. Can optionally be resampled using the -step option. This argument is required unless -icbm_model is specified."],
 	 ["-step", "float", 1, \$stepValue,
 	  "Isostep size to use for the grid. Uses input sampling if unspecified."],
+     ["-icbm_model", "float", 1, \$icbmModel,
+      "Use one of the icbm models, where the required floating point value is the sampling size - which already has to exist in the ICBM model directory."],
 	 );
 
     GetOptions(\@argTbl, \@ARGV, \@leftOverArgs) or die "\n";
 
-    $inputVolume = shift @leftOverArgs or die $usage;
+#    $inputVolume = shift @leftOverArgs or die $usage;
     $grey = shift @leftOverArgs or die $usage;
     $white = shift @leftOverArgs or die $usage;
     $outputFile = shift @leftOverArgs or die $usage;
@@ -86,7 +104,7 @@ sub Initialise {
 
 sub createInfoText {
     $usage = <<USAGE;
-Usage: $ProgramName [options] input.mnc grey_surface.obj ... 
+Usage: $ProgramName [options] grey_surface.obj ... 
            white_surface.obj output_grid.mnc
        $ProgramName -help for details
 USAGE

@@ -4,6 +4,23 @@
 
 #include  <internal_volume_io.h>
 #include  <bicpl.h>
+#include  <ParseArgv.h>
+
+/* command-line argument default values */
+int     include_white_boundary     = 0;
+int     include_grey_boundary       = 0;
+
+/* argument parsing table */
+ArgvInfo argTable[] = {
+  { "-include_white_boundary", ARGV_CONSTANT, (char *)1, 
+    (char *) &include_white_boundary,
+    "Force the inclusion of the white-matter surface boundary. [Default: false]" },
+  { "-include_grey_boundary", ARGV_CONSTANT, (char *)1,
+    (char *) &include_grey_boundary,
+    "Force the inclusion of the grey-matter surface boundary. [Default: false]"},
+  
+  { NULL, ARGV_END, NULL, NULL, NULL }
+};
 
 #define  BINTREE_FACTOR   0.1
 
@@ -352,16 +369,26 @@ int main ( int argc, char *argv[] )
   outside_value = 0;
   inside_value = 1;
   
-  initialize_argument_processing( argc, argv );
-
-  if ( !get_string_argument( NULL, &input_volume_filename ) ||
-       !get_string_argument( NULL, &grey_surface_filename ) ||
-       !get_string_argument( NULL, &white_surface_filename ) ||
-       !get_string_argument( NULL, &output_file_name )
-       ) {
+  if ( ParseArgv( &argc, argv, argTable, 0 ) || ( argc != 5 )) {
     print_error("Usage: %s in_volume grey_surface.obj white_surface.obj output.mnc \n", argv[0] );
     return( 1 );
   }
+
+  input_volume_filename  = argv[1];
+  grey_surface_filename  = argv[2];
+  white_surface_filename = argv[3];
+  output_file_name       = argv[4];
+
+/*   initialize_argument_processing( argc, argv ); */
+
+/*   if ( !get_string_argument( NULL, &input_volume_filename ) || */
+/*        !get_string_argument( NULL, &grey_surface_filename ) || */
+/*        !get_string_argument( NULL, &white_surface_filename ) || */
+/*        !get_string_argument( NULL, &output_file_name ) */
+/*        ) { */
+
+/*     return( 1 ); */
+/*   } */
 
   if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
                     NC_BYTE, FALSE, 0.0, 0.0, TRUE, 
@@ -421,14 +448,20 @@ int main ( int argc, char *argv[] )
     }
   }
 
-  /* force inclusion of the white boundary */
-  input_graphics_file(white_surface_filename, &format, &n_objects,
-                      &objects);
-  scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
-
+  /* force inclusion of the boundaries if so desired */
+  if ( include_white_boundary == 1 ) {
+    input_graphics_file(white_surface_filename, &format, &n_objects,
+                        &objects);
+    scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
+  }
+  if ( include_grey_boundary == 1 ) {
+    input_graphics_file(grey_surface_filename, &format, &n_objects,
+                        &objects);
+    scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
+  }
   output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
                 out_volume, "", NULL );
-
+  
 }
 
 

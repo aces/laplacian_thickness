@@ -461,20 +461,31 @@ void laplacianGrid::output(char *filename, bool isTextFile) {
   else {
 
     // create the output file to write the vertex info to
-    if (open_file( filename, WRITE_FILE, ASCII_FORMAT, &this->outputVertexFile ) != OK ) {
-      cerr << "ERROR: could not open output file " << filename << endl;
-      exit(1);
-  	}
-
-   	for ( int i=0; i < this->numVertices; i++ ) {
-       // output the result to file
-       if( output_real( this->outputVertexFile, this->thicknessPerVertex[i] ) != OK ||
-           output_newline( this->outputVertexFile ) != OK ) {
-         cerr << "ERROR: Problems writing thicknesses to file" << endl;
-       }
+    ofstream outfile(filename);
+    for ( int i=0; i < this->numVertices; ++i ) {
+      outfile << this->thicknessPerVertex[i] << endl;
     }
+    outfile.close();
   }
 }
+
+
+//     if (open_file( filename, WRITE_FILE, ASCII_FORMAT, &this->outputVertexFile ) != OK ) {
+//       cerr << "ERROR: could not open output file " << filename << endl;
+//       exit(1);
+//   	}
+
+//    	for ( int i=0; i < this->numVertices; i++ ) {
+//        // output the result to file
+//        if( output_real( this->outputVertexFile, this->thicknessPerVertex[i] ) != OK ||
+//            output_newline( this->outputVertexFile ) != OK ) {
+//          cerr << "ERROR: Problems writing thicknesses to file" << endl;
+//        }
+//     }
+//     close_file(this->outputVertexFile);
+//   }
+
+
     
 
 

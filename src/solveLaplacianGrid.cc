@@ -12,6 +12,7 @@ Real convergence    = 0.00001;
 int maxIterations   = 300;
 int vValue          = 1;
 char *objFile       = NULL;
+int potentialOnly   = 0;
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -25,6 +26,8 @@ ArgvInfo argTable[] = {
     "Maximum number of iterations for relaxation." },
   { "-object_eval", ARGV_STRING, (char *)0, (char *) &objFile,
     "Evaluate thickness only at vertices of the obj file. Output text rather than minc." },
+  { "-potential_only", ARGV_CONSTANT, (char *)1, (char *) &potentialOnly,
+    "Output only the potential field and stop (Default: False)" },
 
   { NULL, ARGV_END, NULL, NULL, NULL }
 };
@@ -44,6 +47,12 @@ int main(int argc, char* argv[]) {
 
   cout << "Relaxing Equation." << endl;
   grid->relaxEquation(convergence, maxIterations);
+
+  if ( potentialOnly == 1 ) {
+    grid->output(argv[2]);
+    exit(0);
+  }
+
   cout << "Creating gradients." << endl;
   grid->createGradients();
   cout << "Normalising gradients." << endl;

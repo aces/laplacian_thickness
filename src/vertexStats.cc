@@ -6,15 +6,6 @@
     email                : jason@darwin
  ***************************************************************************/
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-
 #include <bicpl.h>
 #include <iostream>
 #include <fstream>
@@ -47,11 +38,11 @@ typedef neighbour_struct neighbour;
 // load a vertex file, returning it in an 
 Real *loadVertexFile( int &numVertices, char *filename ) {
   ifstream vertexFile(filename);
+  string line;
   // get the size of the file
   numVertices = 0;
   while ( ! vertexFile.eof() ) {
-    Real tmp;
-    vertexFile >> tmp;
+    getline(vertexFile, line);
     numVertices++;
   }
   numVertices--; // since it counts the last one once too often
@@ -61,11 +52,11 @@ Real *loadVertexFile( int &numVertices, char *filename ) {
   // now read the info into the array
   vertexFile.close();
   vertexFile.open(filename);
-
-  int i = 0;
-  while ( ! vertexFile.eof() ) {
-    vertexFile >> vertexArray[i];
-    i++;
+  vertexFile.clear();
+  
+  for (int i=0; i< numVertices; i++) {
+    getline(vertexFile, line);
+    vertexArray[i] = atof(line.c_str());
   }
   return vertexArray;
 }
@@ -190,24 +181,24 @@ void writeVerticesToFile( char *filename, Real *vertexValues, int nPoints ) {
 //   delete variances;
 //   }
 // }
+int replaceNaNs         = 0;
+int replaceOutliers     = 0;
+Real stdConstant        = 3.0;
+
+ArgvInfo argTable[] = {
+  { "-replace_nans", ARGV_CONSTANT, (char *) 1, (char *) &replaceNaNs,
+    "Replace NaNs with mean." },
+  { "-replace_outliers", ARGV_CONSTANT, (char *) 1,
+      (char *) &replaceOutliers,
+      "Replace outliers with mean." },
+  { "-std_constant", ARGV_FLOAT, (char *)0, (char *) &stdConstant,
+    "Define outlier as this constant times the standard deviation" },
+  
+  { NULL, ARGV_END, NULL, NULL, NULL }
+};
 
 
 int main( int argc, char *argv[] ) {
-  bool replaceNaNs         = false;
-  bool replaceOutliers     = false;
-  Real stdConstant        = 3.0;
-
-  ArgvInfo argTable[] = {
-    { "-replace_nans", ARGV_CONSTANT, (char *) true, (char *) &replaceNaNs,
-      "Replace NaNs with mean." },
-    { "-replace_outliers", ARGV_CONSTANT, (char *) true,
-      (char *) &replaceOutliers,
-      "Replace outliers with mean." },
-    { "-std_constant", ARGV_FLOAT, (char *)0, (char *) &stdConstant,
-      "Define outlier as this constant times the standard deviation" },
-    
-    { NULL, ARGV_END, NULL, NULL, NULL }
-  };
 
   if ( ParseArgv( &argc, argv, argTable, 0 ) || (! argc > 1 ) ) {
     cerr << "Usage: " << argv[0] << " [options] input.txt [output.txt]"

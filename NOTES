@@ -1,5 +1,6 @@
 Versions and Tags:
 ------------------
+ver_0-2-1: Same as previous version, but actually compiles on IRIX.
 ver_0-2: Second run of lmu pipeline
 ver_0-1: Very first working prototype, still with many, um, issues.
 

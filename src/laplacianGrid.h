@@ -5,6 +5,7 @@
 #include <mniVolume.h>
 #include <vector>
 #include <math.h>
+#include <fstream.h>
 //#include "corticalMantle.h"
 
 using namespace std;
