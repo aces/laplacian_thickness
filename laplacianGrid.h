@@ -4,7 +4,7 @@
 #include <mniLabelVolume.h>
 #include <mniVolume.h>
 #include <vector>
-
+#include <math.h>
 #include "corticalMantle.h"
 
 class laplacianGrid {

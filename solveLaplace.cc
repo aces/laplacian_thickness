@@ -1,7 +1,7 @@
 #include "laplacianGrid.h"
 
 void main(int argc, char* argv[]) {
-  vector<Real> xv(3), yv(3), zv(3);
+  vector<Real> xv(5), yv(5), zv(5);
 
   laplacianGrid *grid = new laplacianGrid(argv[1], 0, 10000);
   grid->relaxEquation(-1, 15);

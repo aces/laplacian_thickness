@@ -148,10 +148,9 @@ void laplacianGrid::normaliseGradients() {
   }
 
   cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
-  this->gradientX->output("gradientX.mnc");
-  this->gradientY->output("gradientY.mnc");
-  this->gradientZ->output("gradientZ.mnc");
-  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
+  //  this->gradientX->output("gradientX.mnc");
+  //  this->gradientY->output("gradientY.mnc");
+  //  this->gradientZ->output("gradientZ.mnc");
 }
 
 // use Eulers method, first towards one then towards the other surface
@@ -161,42 +160,54 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
                                      vector<Real> &Zvector) {
 
   int i = 0;
+  Real evaluation = this->fixedGrid->getVoxel((int)Zvector[i],
+                                              (int)Xvector[i],
+                                              (int)Yvector[i]); 
   // initialise a new vector
-  Xvector[i] = x0; 
-  Yvector[i] = y0; 
-  Zvector[i] = z0; 
+  Xvector[i] = (x0); 
+  Yvector[i] = (y0); 
+  Zvector[i] = (z0); 
 
-
-    cout << "I: " << i << " XV: " << Xvector[i] 
-	 << " YV: " << Yvector[i] 
-	 << " ZV: " << Zvector[i] << endl;
-
-cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
   // move towards outside surface first
-  while (this->fixedGrid->getVoxel((int)Zvector[i],
-				   (int)Xvector[i],
-				   (int)Yvector[i]) 
-         != this->outerValue) {
-    Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[i],Xvector[i],Yvector[i]);
-    Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[i],Xvector[i],Yvector[i]);
-    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[i],Xvector[i],Yvector[i]);
-    cout << Xvalue << " " << Yvalue << " " << Zvalue << endl;
-    cout << Xvalue << " " << this->gradientX->getVoxel(123,108,96) << endl;
+  while (evaluation < this->outerValue) {
 
-    Xvector.push_back(Xvector[i] + Xvalue * h);
-    Yvector.push_back(Yvector[i] + Yvalue * h);
-    Zvector.push_back(Zvector[i] + Zvalue * h);
+    Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[i],
+                                                        Xvector[i],
+                                                        Yvector[i]);
+    Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[i],
+                                                        Xvector[i],
+                                                        Yvector[i]);
+    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[i],
+                                                        Xvector[i],
+                                                        Yvector[i]);
 
+    Xvector[i+1] = (Xvector[i] + Xvalue * h);
+    Yvector[i+1] = (Yvector[i] + Yvalue * h);
+    Zvector[i+1] = (Zvector[i] + Zvalue * h);
 
-    cout << "I: " << i << " XV: " << Xvector[i] 
-	 << " YV: " << Yvector[i] 
-	 << " ZV: " << Zvector[i] 
-	 << " Grid " << this->fixedGrid->getVoxel((int)Zvector[i],
-						(int)Xvector[i],
-						(int)Yvector[i])
-	 << " test " << this->gradientX->getVoxel(123,108,96)
-	 <<endl;
+    
     i++;
+    evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[i]),
+                                           (int)rint(Xvector[i]),
+                                           (int)rint(Yvector[i]));
+    // debugging code:
+    cout << "Iteration: " << i << endl
+         << "Xvalue: " << Xvalue << endl
+         << "Yvalue: " << Yvalue << endl
+         << "Zvalue: " << Zvalue << endl
+         << "Xvector: " << Xvector[i] << endl
+         << "Yvector: " << Yvector[i] << endl
+         << "Zvector: " << Zvector[i] << endl
+         << "Vector Size: " << Xvector.size() << endl
+         << "Vector Capacity: " << Xvector.capacity() << endl
+         << "Grid Value: " << this->fixedGrid->getVoxel(rint(Zvector[i]),
+                                                        rint(Xvector[i]),
+                                                        rint(Yvector[i])) <<endl
+         << "Evaluation: " << evaluation << endl
+         << "Outer value: " << this->outerValue << endl
+         << "Int test: " << rint(5.4) 
+         << endl << endl;
+
   }
 }
   
