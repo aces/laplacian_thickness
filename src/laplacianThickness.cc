@@ -1,4 +1,5 @@
 #include "laplacianGrid.h"
+#include "laplacian2DGrid.h"
 
 extern "C" {
 #include "ParseArgv.h"
@@ -8,6 +9,7 @@ extern "C" {
 using namespace std;
 
 enum operation { FROM_GRID, FROM_SURFACES };
+enum dimensionality { TWO_D, THREE_D };
 
 // set up argument parsing defaults
 Real hValue                      = 0.1;
@@ -24,6 +26,7 @@ char *likeFile                   = NULL;
 nc_type volumeType               = NC_SHORT;
 nc_type gradientsType            = NC_BYTE;
 interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;
+dimenionality dims               = TWO_D;
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -34,6 +37,10 @@ ArgvInfo argTable[] = {
     "Create the grid from two surfaces [Default]" },
   { "-from_grid", ARGV_CONSTANT, (char *)FROM_GRID, (char *) &mode,
     "Use a prepared grid." },
+  { "-two_dimensions", ARGV_CONSTANT, (char *)TWO_D, (char *) &dims,
+    "Work in two dimensions." },
+  { "-three_dimensions", ARGV_CONSTANT, (char *)THREE_D, (char *) &dims,
+    "Work in three dimensions (Default)." },
 
   { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
     "\nCortical Mantle Options:" },
@@ -131,7 +138,23 @@ int main(int argc, char* argv[]) {
   char *out_filename;
   char *grid_file;
   laplacianGrid *grid;
-   
+
+  if (dims == TWO_D) {
+    // in two D we can only work with volumes at this point
+    if (mode == FROM_SURFACES) {
+      cerr << "ERROR: you can only work from volumes in 2D" << endl;
+      return (1);
+    }
+    grid_file = argv[1];
+    out_filename = argv[2];
+    grid = new laplacian2DGrid(grid_file,
+                               inside_value,
+                               outside_value,
+                               integration,
+                               volumeType,
+                               gradientsType);
+    
+                               
 
   if (mode == FROM_SURFACES) {
 
