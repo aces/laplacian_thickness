@@ -168,7 +168,7 @@ void corticalMantle::initialiseLaplacianGrid( int outerValue,
   }
 
   // now for the inner part
-  this->setVoxel(tmpInnerValue, 63, 108, 105);
+  this->setVoxel(tmpInnerValue, 126, 216, 210);
   numValuesChanged = 1;
   
   if (this->verbosityLevel > 0)

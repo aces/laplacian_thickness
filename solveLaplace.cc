@@ -4,6 +4,7 @@ void main(int argc, char* argv[]) {
   vector<Real> xv, yv, zv;
   vector<Real>::iterator xit, yit, zit;
 
+
   laplacianGrid *grid = new laplacianGrid(argv[1], 0, 10000);
   grid->relaxEquation(-1, 25);
   grid->output("grid.mnc");
@@ -24,4 +25,5 @@ void main(int argc, char* argv[]) {
   grid->computeAllThickness();
 
   grid->output("thickness.mnc");
+
 }
