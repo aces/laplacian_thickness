@@ -2,7 +2,7 @@
  * Code adapted from David MacDonald's surface_mask2
  */
 
-#include  <internal_volume_io.h>
+#include  <volume_io/internal_volume_io.h>
 #include  <bicpl.h>
 #include  <ParseArgv.h>
 
