@@ -36,6 +36,8 @@ public:
   void createStreamlines();
   //! normalise according to units to get a thickness metric
   void createThicknessMetric();
+  //! create a streamline at given voxel
+  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume
   void output(char* filename);
 
