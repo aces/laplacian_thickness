@@ -64,17 +64,13 @@ void main(int argc, char *argv[]) {
     exit(1);
   }
 
-  /*
-    // and create a label volume with the same properties as object_intersects
-    cortical_mantle = create_label_volume(object_intersects, NC_BYTE);
-    set_all_volume_label_data( cortical_mantle, 0);
-  */
-
   get_volume_sizes(object_intersects, sizes);
 
   // find a few points within the mantle based on ray intersection
   find_cortical_mantle(object_intersects);
 
+  // find the remaining points in the mantle through neigbour checks
+  // and relaxation. This step can be turned off from the command line.
   if (arg_relax_mantle == 1) {
     cout << "now relaxing mantle" << endl;
     relax_mantle(object_intersects, sizes, max_relax_iterations,
