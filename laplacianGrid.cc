@@ -135,9 +135,9 @@ void laplacianGrid::normaliseGradients() {
           nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
           ny = dy / sqrt( pow(dy,2) + pow(dx,2) / pow(dz,2) );
           nz = dz / sqrt( pow(dz,2) + pow(dx,2) / pow(dy,2) );
-          cout << "NX: " << nx << endl;
-          cout << "NY: " << ny << endl;
-          cout << "NZ: " << nz << endl;
+	  //          cout << "NX: " << nx << endl;
+	  //          cout << "NY: " << ny << endl;
+	  //          cout << "NZ: " << nz << endl;
 	  
           this->gradientX->setVoxel(nx, z,x,y);
           this->gradientY->setVoxel(ny, z,x,y);
@@ -146,9 +146,12 @@ void laplacianGrid::normaliseGradients() {
       }
     }
   }
+
+  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
   this->gradientX->output("gradientX.mnc");
   this->gradientY->output("gradientY.mnc");
   this->gradientZ->output("gradientZ.mnc");
+  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
 }
 
 // use Eulers method, first towards one then towards the other surface
@@ -156,24 +159,43 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
                                      vector<Real> &Xvector, 
                                      vector<Real> &Yvector,
                                      vector<Real> &Zvector) {
-  // initialise a new vector
-  Xvector.push_back(x0); 
-  Yvector.push_back(y0); 
-  Zvector.push_back(z0); 
 
   int i = 0;
+  // initialise a new vector
+  Xvector[i] = x0; 
+  Yvector[i] = y0; 
+  Zvector[i] = z0; 
 
+
+    cout << "I: " << i << " XV: " << Xvector[i] 
+	 << " YV: " << Yvector[i] 
+	 << " ZV: " << Zvector[i] << endl;
+
+cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
   // move towards outside surface first
-  while (this->gradientX->getVoxel((int)Zvector[i],
-                                  (int)Yvector[i],
-                                  (int)Xvector[i]) 
+  while (this->fixedGrid->getVoxel((int)Zvector[i],
+				   (int)Xvector[i],
+				   (int)Yvector[i]) 
          != this->outerValue) {
+    Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[i],Xvector[i],Yvector[i]);
+    Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[i],Xvector[i],Yvector[i]);
+    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[i],Xvector[i],Yvector[i]);
+    cout << Xvalue << " " << Yvalue << " " << Zvalue << endl;
+    cout << Xvalue << " " << this->gradientX->getVoxel(123,108,96) << endl;
 
-    Xvector.push_back(Xvector[i]
-                      + this->gradientX->getInterpolatedVoxel(Zvector[i],
-                                                              Yvector[i],
-                                                              Xvector[i])
-                      * h);
+    Xvector.push_back(Xvector[i] + Xvalue * h);
+    Yvector.push_back(Yvector[i] + Yvalue * h);
+    Zvector.push_back(Zvector[i] + Zvalue * h);
+
+
+    cout << "I: " << i << " XV: " << Xvector[i] 
+	 << " YV: " << Yvector[i] 
+	 << " ZV: " << Zvector[i] 
+	 << " Grid " << this->fixedGrid->getVoxel((int)Zvector[i],
+						(int)Xvector[i],
+						(int)Yvector[i])
+	 << " test " << this->gradientX->getVoxel(123,108,96)
+	 <<endl;
     i++;
   }
 }
