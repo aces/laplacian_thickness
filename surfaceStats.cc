@@ -19,6 +19,8 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -35,8 +37,8 @@ struct neighbour_struct {
 };
 typedef neighbour_struct neighbour;
 
-neighbour *createNeighbourList( const polygon_struct &p ) {
-}
+//neighbour *createNeighbourList( const polygon_struct &p ) {
+//}
 
 // load a vertex file, returning it in an 
 Real *loadVertexFile( int &numVertices, char *filename ) {
@@ -66,7 +68,7 @@ Real *loadVertexFile( int &numVertices, char *filename ) {
 
 
 
-void findFileOutliers( Real *vertexValues, int nPoints ) {
+void findFileOutliers( Real *vertexValues, int nPoints, ofstream &outstream ) {
   pointStats *stats = new pointStats;
   Real       sumTotal;
   int        numNaN, numUsed, numValid, numInvalid;
@@ -107,13 +109,13 @@ void findFileOutliers( Real *vertexValues, int nPoints ) {
   numInvalid = 1;
   for (int i=0; i < nPoints;  ++i) {
     // replace if NaN
-    if ( vertexValues[i] != vertexValues[i] ) {
-      vertexValues[i] = stats->mean;
+    if ( vertexValues[i] != vertexValues[i] 
+	 || fabs( vertexValues[i] - stats->mean ) > ( stats->std * 3 ) ) {
+      outstream << stats->mean << endl;
       numInvalid++;
     }
-    else if ( fabs( vertexValues[i] - stats->mean ) > ( stats->std * 3 ) ) {
-      //      cout << "at: " << i << " with value of " << vertexValues[i] << endl;
-      numInvalid++;
+    else {
+      outstream << vertexValues[i] << endl;
     }
   }
 
@@ -172,5 +174,6 @@ void findFileOutliers( Real *vertexValues, int nPoints ) {
 int main( int argc, char *argv[] ) {
   int numVertices;
   Real *vertexArray = loadVertexFile( numVertices, argv[1] );
-  findFileOutliers( vertexArray, numVertices );
+  ofstream outstream( argv[2], ios::out  );
+  findFileOutliers( vertexArray, numVertices, outstream );
 }
