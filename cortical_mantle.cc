@@ -2,17 +2,24 @@
 
 #include "cortical_mantle.h"
 
-
-/*
+//! tests whether voxel lies between two surfaces
+/*!
   check_if_between_surfaces - tests whether a voxel lies between the inner 
   and outer surface. The strategy is to expand a line out in each of the
   cardinal directions to see which surface is first intersected. If it
   intersects both white and grey surfaces it is considered to be in
   the cortical mantle.
+  
+  \param object_intersects The volume to be checked.
+  \param sizes The dimensions of that volume
 
-  NOTE: this method will not find all points within the mantle. It's goal
-  instead is to find a point known to lie within the mantle and to then
-  expand out from that point to fill in the rest of the cortex.  */
+  \return 1 if voxel lies between two surfaces, 0 otherwise
+
+  \note This method will not find all points within the
+  mantle. It's goal instead is to find a point known to lie within the
+  mantle and to then expand out from that point to fill in the rest of
+  the cortex.  
+*/
 
 int check_if_between_surfaces(Volume object_intersects,
 			      int* sizes, 
@@ -99,15 +106,15 @@ int check_if_between_surfaces(Volume object_intersects,
   }
 }
 
-/*
+/*!
   find_cortical_mantle: 
   takes two arguments: a label volume, which will be modified, and a regular
   volume which contains the surface volume intersect data. The label volume
   will have four possible values at the end: 
-  0 for no interest
-  1 for grey surface
-  2 for white surface
-  3 for point in the cortical mantle
+     - 0 for no interest
+     - 1 for grey surface
+     - 2 for white surface
+     - 3 for point in the cortical mantle
 */
 
 int find_cortical_mantle(Volume object_intersects) {

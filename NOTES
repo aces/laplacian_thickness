@@ -1,0 +1,12 @@
+Unresolved Issues:
+------------------
+* Two surface intersection.
+* Surface thickness greater than one pixel.
+	* This I should be able to solve through setting all of the areas
+	  outside of the brain to a certain value, all of the areas inside
+	  the brain as another, leaving all voxels identified as being 
+	  part of either surface as part of the mantle.
+Features Needed:
+----------------
+* Convergence criteria which measures change across iterations in 
+  determining the mantle and stops once num changed increases.
