@@ -3,16 +3,12 @@
 
 #include <mniLabelVolume.h>
 #include <mniVolume.h>
+#include "laplacianGlobals.h"
 #include <vector>
 #include <math.h>
 #include <fstream>
 
 using namespace std;
-
-enum integrator { EULER, SECOND_ORDER_RK, FOURTH_ORDER_RK };
-enum interpolation { NEAREST_NEIGHBOUR_INTERP = -1,
-		     LINEAR_INTERP = 0,
-		     CUBIC_INTERP = 2 };
 
 class laplacianGrid {
 protected:

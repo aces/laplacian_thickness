@@ -12,13 +12,13 @@ laplacian2DGrid::laplacian2DGrid( char *gridFile,
   this->outerValue = outerValue;
 
   // create the grid volume from file
-  fixedGrid = new mniLabelVolume(gridFile, 0.0, 0.0, 2, XYdimOrder);
+  fixedGrid = new mniLabelVolume(gridFile, 0.0, 0.0, 3, XYZdimOrder);
   // construct the volume from the mantle file, but signed
-  volume = new mniVolume( gridFile, 0.0, 0.0, 2, XYdimOrder,
+  volume = new mniVolume( gridFile, 0.0, 0.0, 3, XYZdimOrder,
                           volumeDataType, TRUE, TRUE, NULL );
 
   // initialise the sizes
-  sizes = new int[2];
+  sizes = new int[MAX_DIMENSIONS];
   sizes = fixedGrid->getSizes();
 
   volume->setRealRange(0, 20);
@@ -59,7 +59,7 @@ Real laplacian2DGrid::evaluate(Real x, Real y, interpolation interpType) {
 
 inline void laplacian2DGrid::eulerStep(vector<Real> &Xvector,
                                        vector<Real> &Yvector,
-                                       Real dx, Real dy,
+                                       Real dx, Real dy, Real h,
                                        Real &newx, Real &newy,
                                        int currentIndex) {
   newx = Xvector[currentIndex] + dx * h;
@@ -141,8 +141,8 @@ void laplacian2DGrid::normaliseGradients() {
   Real nx, ny, dx, dy;
   for (int x=1; x < this->sizes[0]-1; x++) {
     for (int y=1; y < this->sizes[1]-1; y++) {
-      if (this->fixedGrid->getVoxel(x,y,z) != this->innerValue &&
-          this->fixedGrid->getVoxel(x,y,z) != this->outerValue) {
+      if (this->fixedGrid->getVoxel(x,y,0) != this->innerValue &&
+          this->fixedGrid->getVoxel(x,y,0) != this->outerValue) {
         dx = this->gradientX->getVoxel(x,y,0);
         dy = this->gradientY->getVoxel(x,y,0);
 

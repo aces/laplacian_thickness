@@ -26,7 +26,7 @@ char *likeFile                   = NULL;
 nc_type volumeType               = NC_SHORT;
 nc_type gradientsType            = NC_BYTE;
 interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;
-dimenionality dims               = TWO_D;
+dimensionality dims              = TWO_D;
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -137,9 +137,10 @@ int main(int argc, char* argv[]) {
   char *white_surface;
   char *out_filename;
   char *grid_file;
-  laplacianGrid *grid;
 
   if (dims == TWO_D) {
+    laplacian2DGrid *grid;
+
     // in two D we can only work with volumes at this point
     if (mode == FROM_SURFACES) {
       cerr << "ERROR: you can only work from volumes in 2D" << endl;
@@ -153,91 +154,119 @@ int main(int argc, char* argv[]) {
                                integration,
                                volumeType,
                                gradientsType);
-    
-                               
+    grid->setVerbosity( vValue );
 
-  if (mode == FROM_SURFACES) {
+    cout << "Relaxing Equation." << endl;
+    grid->relaxEquation(convergence, maxIterations);
 
-    grey_surface = argv[1];
-    white_surface = argv[2];
-    out_filename = argv[3];
-    
-    cout << "Creating cortical mantle." << endl;
-    Volume input_grid = create_mantle( likeFile,
-                                       grey_surface,
-                                       white_surface,
-                                       include_white_boundary,
-                                       include_grey_boundary );
-    cout << "Mantle created" << endl;
-    grid = new laplacianGrid(input_grid, 
-                             inside_value,
-                             outside_value,
-                             integration,
-			     volumeType,
-			     gradientsType);
-
-  }
-  else if (mode == FROM_GRID) {
-    grid_file = argv[1];
-    out_filename = argv[2];
-    grid = new laplacianGrid(grid_file, 
-                             inside_value,
-                             outside_value,
-                             integration,
-			     volumeType,
-			     gradientsType);
-    cout << "after constructor " << out_filename << endl;
-
-  }
-
-
-  grid->setVerbosity( vValue );
-
-  cout << "Relaxing Equation." << endl;
-  grid->relaxEquation(convergence, maxIterations);
-
-  if ( potentialOnly == 1 ) {
-    grid->output(out_filename);
-    exit(0);
-  }
-
-  cout << "Creating gradients." << endl;
-  grid->createGradients();
-  cout << "Normalising gradients." << endl;
-  grid->normaliseGradients();
-
-  /*
-  cout << "test" << endl;
-    grid->createStreamline(123,110,35,1,xv,yv,zv);
-    
-    xit = xv.begin();
-    yit = yv.begin();
-    zit = zv.begin();
-    while (xit != xv.end()) {
-    cout << *xit << " " << *yit << " " << *zit << endl;
-    xit++; yit++; zit++;
+    if ( potentialOnly == 1 ) {
+      grid->output(out_filename);
+      exit(0);
     }
-    cout << "Size: " << xv.size() << endl;
-    cout << "Length: " << grid->streamLength(xv, yv, zv) << endl;
-  */
-  //  grid->setVerbosity(10);
-  //  grid->createStreamline(94,85,154, 0.5, xv, yv, zv);
-  //  grid->createStreamline(83,172,91, 1, xv, yv, zv);
 
-  cout << "Beginning computation of thicknesses." << endl;
+    cout << "Creating gradients." << endl;
+    grid->createGradients();
+    cout << "Normalising gradients." << endl;
+    grid->normaliseGradients();
 
-  if( objFile == NULL ) {
-    grid->computeAllThickness( hValue, boundaryType );
-    grid->output(out_filename);
-  }
-  else {
-    cout << "  Only computing at each vertex" << endl;
-    grid->computeAllThickness( hValue, objFile, boundaryType );
-    grid->output( out_filename, true );
-  }
+    cout << "Beginning computation of thicknesses." << endl;
+
+    if( objFile == NULL ) {
+      grid->computeAllThickness( hValue, boundaryType );
+      grid->output(out_filename);
+    }
+    else {
+      cerr << "2D mode cannot compute only at a vertex" << endl;
+    }
 
   return (0);
+  }
+  else { // working in three dimensions
+    laplacianGrid *grid;
+                               
 
+    if (mode == FROM_SURFACES) {
+      
+      grey_surface = argv[1];
+      white_surface = argv[2];
+      out_filename = argv[3];
+      
+      cout << "Creating cortical mantle." << endl;
+      Volume input_grid = create_mantle( likeFile,
+					 grey_surface,
+					 white_surface,
+					 include_white_boundary,
+					 include_grey_boundary );
+      cout << "Mantle created" << endl;
+      grid = new laplacianGrid(input_grid, 
+			       inside_value,
+			       outside_value,
+			       integration,
+			       volumeType,
+			       gradientsType);
+
+    }
+    else if (mode == FROM_GRID) {
+      grid_file = argv[1];
+      out_filename = argv[2];
+      grid = new laplacianGrid(grid_file, 
+			       inside_value,
+			       outside_value,
+			       integration,
+			       volumeType,
+			       gradientsType);
+      cout << "after constructor " << out_filename << endl;
+      
+  }
+    
+    
+    grid->setVerbosity( vValue );
+    
+    cout << "Relaxing Equation." << endl;
+    grid->relaxEquation(convergence, maxIterations);
+    
+    if ( potentialOnly == 1 ) {
+      grid->output(out_filename);
+      exit(0);
+    }
+    
+    cout << "Creating gradients." << endl;
+    grid->createGradients();
+    cout << "Normalising gradients." << endl;
+    grid->normaliseGradients();
+
+    /*
+      cout << "test" << endl;
+      grid->createStreamline(123,110,35,1,xv,yv,zv);
+      
+      xit = xv.begin();
+      yit = yv.begin();
+      zit = zv.begin();
+      while (xit != xv.end()) {
+      cout << *xit << " " << *yit << " " << *zit << endl;
+      xit++; yit++; zit++;
+      }
+      cout << "Size: " << xv.size() << endl;
+      cout << "Length: " << grid->streamLength(xv, yv, zv) << endl;
+    */
+    //  grid->setVerbosity(10);
+    //  grid->createStreamline(94,85,154, 0.5, xv, yv, zv);
+    //  grid->createStreamline(83,172,91, 1, xv, yv, zv);
+    
+    cout << "Beginning computation of thicknesses." << endl;
+    
+    if( objFile == NULL ) {
+      grid->computeAllThickness( hValue, boundaryType );
+      grid->output(out_filename);
+    }
+    else {
+      cout << "  Only computing at each vertex" << endl;
+      grid->computeAllThickness( hValue, objFile, boundaryType );
+      grid->output( out_filename, true );
+    }
+    
+    return (0);
+  }
 }
 
 

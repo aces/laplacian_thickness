@@ -14,6 +14,7 @@ void resample_polygon_vector( vector<polygons_struct> &layers,
     }
   }
   for (j = layers.begin(); j != layers.end(); j++) {
+
     compute_polygon_normals( &*j );
   }
 }

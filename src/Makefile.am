@@ -8,10 +8,12 @@ create_laplacian_grid_SOURCES = createLaplacianGrid_main.c \
 
 solve_laplacian_grid_SOURCES = solveLaplacianGrid.cc \
 	laplacianGrid.cc \
+	laplacian2DGrid.cc \
 	ParseArgv.c
 
 laplacian_thickness_SOURCES = createLaplacianGrid.c \
 	laplacianGrid.cc \
+	laplacian2DGrid.cc \
 	laplacianThickness.cc
 
 vertex_stats_SOURCES = vertexStats.cc \

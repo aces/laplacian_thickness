@@ -1,21 +1,22 @@
 #ifndef __LAPLACIAN2DGRID__
 #define __LAPLACIAN2DGRID__
 
-#ifndef __LAPLACIANGRID__
-#define __LAPLACIANGRID__
-
 #include <mniLabelVolume.h>
 #include <mniVolume.h>
 #include <vector>
 #include <math.h>
 #include <fstream>
+#include "laplacianGlobals.h"
 
 using namespace std;
 
+/*
 enum integrator { EULER, SECOND_ORDER_RK, FOURTH_ORDER_RK };
 enum interpolation { NEAREST_NEIGHBOUR_INTERP = -1,
 		     LINEAR_INTERP = 0,
 		     CUBIC_INTERP = 2 };
+*/
+static STRING XYdimOrder[] = {MIxspace, MIyspace};
 
 class laplacian2DGrid {
 protected:
@@ -42,7 +43,7 @@ protected:
   //! Sets up the necessary volume information
   void initialiseVolumes(integrator type, nc_type gradientDataType);
   //! function pointer for the integration method to use.
-  void (laplacianGrid::*integrationStep)(vector<Real> &Xvector,
+  void (laplacian2DGrid::*integrationStep)(vector<Real> &Xvector,
                                          vector<Real> &Yvector,
                                          Real dx, Real dy, Real h,
                                          Real &newx,
@@ -60,14 +61,14 @@ protected:
 public:
 
   //! constructor from file
-  laplacianGrid(char* mantleFile,
+  laplacian2DGrid(char* mantleFile,
                 int innerValue,
                 int outerValue,
 		integrator type = EULER,
 		nc_type volumeDataType = NC_SHORT,
 		nc_type gradientDataType = NC_BYTE);
   //! constructor from volume_struct pointer
-  laplacianGrid(Volume mantleVolume,
+  laplacian2DGrid(Volume mantleVolume,
 		int innerValue,
 		int outerValue,
 		integrator type = EULER,
