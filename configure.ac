@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT
-AC_CONFIG_SRCDIR([solveLaplace.cc])
-AM_INIT_AUTOMAKE(laplacian_thickness, 0.1)
+AC_CONFIG_SRCDIR([src/solveLaplacianGrid.cc])
+AM_INIT_AUTOMAKE(laplacian_thickness, 0.2)
 AM_CONFIG_HEADER(config.h)
 
 smr_WITH_BUILD_PATH
@@ -35,5 +35,5 @@ AC_MSG_RESULT([yes])
 
 AC_LANG_POP
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile scripts/Makefile])
 AC_OUTPUT

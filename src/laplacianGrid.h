@@ -5,7 +5,7 @@
 #include <mniVolume.h>
 #include <vector>
 #include <math.h>
-#include "corticalMantle.h"
+//#include "corticalMantle.h"
 
 using namespace std;
 
@@ -34,7 +34,7 @@ protected:
   
 public:
   //! constructor from corticalMantle
-  laplacianGrid(corticalMantle *mantle);
+  //  laplacianGrid(corticalMantle *mantle);
   //! constructor from file
   laplacianGrid(char* mantleFile,
                 int innerValue,
