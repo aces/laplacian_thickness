@@ -7,6 +7,8 @@ extern "C" {
 
 using namespace std;
 
+enum operation { FROM_GRID, FROM_SURFACES };
+
 // set up argument parsing defaults
 Real hValue                      = 0.1;
 Real convergence                 = 0.00001;
@@ -15,12 +17,21 @@ int  vValue                      = 1;
 char *objFile                    = NULL;
 int  potentialOnly               = 0;
 integrator integration           = EULER;
+operation mode                   = FROM_SURFACES;
 int  include_white_boundary      = 0;
 int  include_grey_boundary       = 0;
 char *likeFile                   = NULL; 
 
 // argument parsing table
 ArgvInfo argTable[] = {
+  { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
+    "\nOperation Type:" },
+  { "-from_surfaces", ARGV_CONSTANT, (char *)FROM_SURFACES,
+    (char *) &mode,
+    "Create the grid from two surfaces [Default]" },
+  { "-from_grid", ARGV_CONSTANT, (char *)FROM_GRID, (char *) &mode,
+    "Use a prepared grid." },
+
   { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
     "\nCortical Mantle Options:" },
   { "-include_white_boundary", ARGV_CONSTANT, (char *)1, 
@@ -63,7 +74,7 @@ int main(int argc, char* argv[]) {
   vector<Real> xv, yv, zv;
   vector<Real>::iterator xit, yit, zit;
 
-  if ( ParseArgv(&argc, argv, argTable, 0) || (argc != 4 )) {
+  if ( ParseArgv(&argc, argv, argTable, 0) ) {
     cerr << endl << "Usage: " << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
     cerr << "\tor" << endl;
     cerr << "Usage: " << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
@@ -71,25 +82,45 @@ int main(int argc, char* argv[]) {
     return (1);
   }
 
-  char *grey_surface = argv[1];
-  char *white_surface = argv[2];
-  char *out_filename = argv[3];
-
   int outside_value = 10000;
   int inside_value = 0;
+  char *grey_surface;
+  char *white_surface;
+  char *out_filename;
+  char *grid_file;
+  laplacianGrid *grid;
+   
 
-  cout << "Creating cortical mantle." << endl;
-  Volume input_grid = create_mantle( likeFile,
-				     grey_surface,
-				     white_surface,
-				     include_white_boundary,
-				     include_grey_boundary );
-  cout << "Mantle created" << endl;
+  if (mode == FROM_SURFACES) {
 
-  laplacianGrid *grid = new laplacianGrid(input_grid, 
-					  inside_value,
-					  outside_value,
-					  integration);
+    grey_surface = argv[1];
+    white_surface = argv[2];
+    out_filename = argv[3];
+    
+    cout << "Creating cortical mantle." << endl;
+    Volume input_grid = create_mantle( likeFile,
+                                       grey_surface,
+                                       white_surface,
+                                       include_white_boundary,
+                                       include_grey_boundary );
+    cout << "Mantle created" << endl;
+    grid = new laplacianGrid(input_grid, 
+                             inside_value,
+                             outside_value,
+                             integration);
+
+  }
+  else if (mode == FROM_GRID) {
+    grid_file = argv[1];
+    out_filename = argv[2];
+    grid = new laplacianGrid(grid_file, 
+                             inside_value,
+                             outside_value,
+                             integration);
+    cout << "after constructor " << out_filename << endl;
+
+  }
+
 
   grid->setVerbosity( vValue );
 

@@ -40,40 +40,40 @@ protected:
 			  vector<Real> &Yvector,
 			  vector<Real> &Zvector,
 			  Real dx, Real dy, Real dz, Real h,
-			  vector<Real>::iterator XinsertIt,
-			  vector<Real>::iterator YinsertIt,
-			  vector<Real>::iterator ZinsertIt,
+                                         Real &newx,
+                                         Real &newy,
+                                         Real &newz,
 			  int currentStep);
   void eulerStep(vector<Real> &Xvector,
 			  vector<Real> &Yvector,
 			  vector<Real> &Zvector,
 			  Real dx, Real dy, Real dz, Real h,
-			  vector<Real>::iterator XinsertIt,
-			  vector<Real>::iterator YinsertIt,
-			  vector<Real>::iterator ZinsertIt,
+                 Real &newx,
+                 Real &newy,
+                 Real &newz,
 			  int currentStep);
   void fourthOrderRungeKuttaStep(vector<Real> &Xvector,
 			  vector<Real> &Yvector,
 			  vector<Real> &Zvector,
 			  Real dx, Real dy, Real dz, Real h,
-			  vector<Real>::iterator XinsertIt,
-			  vector<Real>::iterator YinsertIt,
-			  vector<Real>::iterator ZinsertIt,
+                                 Real &newx,
+                                 Real &newy,
+                                 Real &newz,
 			  int currentStep);
   void secondOrderRungeKuttaStep(vector<Real> &Xvector,
 			  vector<Real> &Yvector,
 			  vector<Real> &Zvector,
 			  Real dx, Real dy, Real dz, Real h,
-			  vector<Real>::iterator XinsertIt,
-			  vector<Real>::iterator YinsertIt,
-			  vector<Real>::iterator ZinsertIt,
+                                 Real &newx,
+                                 Real &newy,
+                                 Real &newz,
 			  int currentStep);
 
 
   void getDerivatives( Real x, Real y, Real z,
 		       Real &dx, Real &dy, Real &dz );
 
-  
+  Real evaluate( Real x, Real y, Real z );  
 public:
   //! constructor from corticalMantle
   //  laplacianGrid(corticalMantle *mantle);
