@@ -9,6 +9,7 @@ using namespace std;
 // set up argument parsing defaults
 Real hValue         = 1;
 int vValue          = 1;
+char *objFile       = NULL;
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -16,6 +17,8 @@ ArgvInfo argTable[] = {
     "H value to use for Eulerian integration" },
   { "-v", ARGV_INT, (char *)0, (char *) &vValue,
     "Verbosity level (higher = more verbose)" },
+  { "-object_eval", ARGV_STRING, (char *)0, (char *) &objFile,
+    "Evaluate thickness only at vertices of the obj file. Output text rather than minc." },
 
   { NULL, ARGV_END, NULL, NULL, NULL }
 };
@@ -59,9 +62,17 @@ int main(int argc, char* argv[]) {
   //  grid->createStreamline(83,172,91, 1, xv, yv, zv);
 
   cout << "Beginning computation of thicknesses." << endl;
-  grid->computeAllThickness( hValue );
 
-  grid->output(argv[2]);
+  if( objFile == NULL ) {
+    grid->computeAllThickness( hValue );
+    grid->output(argv[2]);
+  }
+  else {
+    cout << "Doing it per vertex" << endl;
+    grid->computeAllThickness( hValue, objFile );
+    grid->output( argv[2], true );
+  }
+
   return (0);
 
 }

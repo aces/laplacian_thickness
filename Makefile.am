@@ -1,4 +1,6 @@
-bin_PROGRAMS = laplace_initialisation laplacian_thickness_volume two_objects_evaluate
+bin_PROGRAMS = laplace_initialisation laplacian_thickness_volume two_objects_evaluate vertex_stats
+
+vertex_stats_SOURCES = surfaceStats.cc
 
 laplace_initialisation_SOURCES = laplace_initialisation.c
 

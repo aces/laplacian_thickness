@@ -313,6 +313,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
       cout << "--------------------------" << endl << endl;
     }
   }
+  if (this->verbosity >= 5) {
+    cout << "End of createStreamline function" << endl;
+  }
 }
   
 Real laplacianGrid::streamLength(vector<Real> &Xvector,
@@ -330,6 +333,58 @@ Real laplacianGrid::streamLength(vector<Real> &Xvector,
   }
   return length;
 }
+
+void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
+	File_formats 		format;
+	int 						point, nPoints, nObjects;
+	Point 					*points;
+	object_struct 	**objects;
+  Real            *voxel, length;
+		
+	// open the file
+	if( input_graphics_file( objFile, &format, &nObjects, &objects )
+			!= OK ) {
+		cerr << "ERROR: could not open file " << objFile << endl;
+		exit(1);
+	}
+	
+	if( nObjects != 1 ) {
+	  cerr << "WARNING: more than one object in " << objFile << endl;
+	}
+	
+	nPoints = get_object_points( objects[0], &points );
+  this->thicknessPerVertex = new Real[nPoints];
+  this->numVertices = nPoints;
+	
+	initialize_progress_report( &this->progressReport, FALSE, nPoints,
+	                            "Computing thickness streamlines" );
+ 	for (int i=0; i < nPoints; i++) {
+ 	  voxel = this->fixedGrid->convertWorldToVoxel(
+ 	                            RPoint_x(points[i]),
+ 	                            RPoint_y(points[i]),
+ 	                            RPoint_z(points[i]) );
+ 	
+  	vector<Real> xv, yv, zv;
+//  	cout << voxel[0] << " " << voxel[1] << " " << voxel[2] << endl;
+  	if (this->fixedGrid->getVoxel(rint(voxel[0]), rint(voxel[1]), rint(voxel[2])) < 6000 &&
+        this->fixedGrid->getVoxel(rint(voxel[0]), rint(voxel[1]), rint(voxel[2])) > 4000) {
+  	  this->createStreamline( (int)rint(voxel[1]),
+	                            (int)rint(voxel[2]),
+	                            (int)rint(voxel[0]),
+	                            h, xv, yv, zv );
+    	length = this->streamLength( xv, yv, zv );
+//    	cout << "Actually computing streamlines." << endl;
+   } else {
+      length = 0;
+      if ( this->verbosity > 1 ) {
+        cout << "Could not evaluate at vertex " << i << endl;
+      }
+   }
+	  this->thicknessPerVertex[i] = length;
+	  update_progress_report( &this->progressReport, i );
+	}
+}
+	
 
 void laplacianGrid::computeAllThickness(Real h) {
 
@@ -368,8 +423,27 @@ void laplacianGrid::computeAllThickness(Real h) {
         
   
 
-void laplacianGrid::output(char *filename) {
-  this->volume->output(filename);
+void laplacianGrid::output(char *filename, bool isTextFile) {
+
+  if ( isTextFile == false ) {
+    this->volume->output(filename);
+  }
+  else {
+
+    // create the output file to write the vertex info to
+    if (open_file( filename, WRITE_FILE, ASCII_FORMAT, &this->outputVertexFile ) != OK ) {
+      cerr << "ERROR: could not open output file " << filename << endl;
+      exit(1);
+  	}
+
+   	for ( int i=0; i < this->numVertices; i++ ) {
+       // output the result to file
+       if( output_real( this->outputVertexFile, this->thicknessPerVertex[i] ) != OK ||
+           output_newline( this->outputVertexFile ) != OK ) {
+         cerr << "ERROR: Problems writing thicknesses to file" << endl;
+       }
+    }
+  }
 }
     
 

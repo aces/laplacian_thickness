@@ -17,6 +17,12 @@ protected:
   int outerValue, innerValue;
   //! Hold the volume to solve over
   mniVolume *volume;
+  //! The text file to be output to if solving only at vertices
+  FILE *outputVertexFile;
+  //! Holds the thickness info at each vertex
+  Real *thicknessPerVertex;
+  //! Holds number of vertices in obj file
+  int numVertices;
   //! Hold the fixed grid
   mniLabelVolume *fixedGrid;
   //! Hold the gradient volumes
@@ -58,9 +64,11 @@ public:
                     vector<Real> &Zvector);
 
   void computeAllThickness(Real h);
+  //! overloaded to only create streamlines at vertices
+  void computeAllThickness(Real h, char* objFile);
   //  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume
-  void output(char* filename);
+  void output(char* filename, bool isTextFile=false);
   //! set the level of verbosity
   void setVerbosity(int newVerbosity) { this->verbosity = newVerbosity; };
 
