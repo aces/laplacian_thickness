@@ -69,9 +69,11 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
   for (int z=0; z < this->sizes[0]; z++) {
     for (int x=0; x < this->sizes[1]; x++) {
       for (int y=0; y < this->sizes[2]; y++) {
-        value = get_volume_label_data_5d(inner, z, x, y, 0, 0) + 
-          get_volume_label_data_5d(outer, z, x, y, 0, 0);
-        set_volume_label_data_5d(this->mantle, z, x, y, 0, 0, value);
+	//        value = get_volume_label_data_5d(inner, z, x, y, 0, 0) + 
+	//          get_volume_label_data_5d(outer, z, x, y, 0, 0);
+	//        set_volume_label_data_5d(this->mantle, z, x, y, 0, 0, value);
+	this->setVoxel(inner->getVoxel(z,x,y) + outer->getVoxel(z,x,y),
+		       z,x,y);
       }
     }
   }
@@ -87,18 +89,18 @@ int corticalMantle::neighbourFill( int fillValue ) {
     for (indices[1]=1; indices[1] < this->sizes[1]-1; indices[1]++) {
       for (indices[2]=1; indices[2] < this->sizes[2]-1; indices[2]++) {
         //check if voxel has requisite value
-        if (get_volume_label_data(this->mantle, indices) == fillValue ) {
+        if (this->getVoxel(indices) == fillValue ) {
           //check all neighbours
           for (int i=0; i < 3; i++) {
             for (int j=-1; j < 2; j++) {
               tmpIndices = indices;
               tmpIndices[i] += j;
-              int value = get_volume_label_data(this->mantle, tmpIndices);
+              int value = this->getVoxel(tmpIndices);
               if (value != this->greyValue &&
                   value != this->whiteValue &&
                   value != this->overlapValue &&
                   value != fillValue) {
-                set_volume_label_data(this->mantle, tmpIndices, fillValue);
+                this->setValue(fillValue, tmpIndices);
                 //cout << "Indices: " << tmpIndices[0] << " " << tmpIndices[1]
                 //   << " " << tmpIndices[2] << " " << value << " " 
                 //   << fillValue << endl;
