@@ -47,6 +47,79 @@ void laplacian2DGrid::initialiseVolumes(integrator integrationType,
   integrationStep = &laplacian2DGrid::eulerStep;
 }
 
+//! Initialises the grid based on distance to boundaries
+/*!  
+  Creates two vectors, one for each set of voxels at each of the
+  two boundaries. Then creates a distance map to each of the
+  boundaries, and finds the shortest distance to each boundary. Uses
+  the ratio of the two distances to figure out what the initial value
+  of the grid should be.
+
+  \param sparsity The distance in voxels by which the inside and
+  outside bounday points will be spaced. The higher, the less
+  accurate, but the faster.
+*/
+void laplacian2DGrid::initialGridGuess(int sparsity) {
+
+  // two vectors for each of the boundaries.
+  vector<twodindex> insideIndices;
+  vector<twodindex> outsideIndices;
+
+  float initialValue;
+
+  // fill the two boundary vectors
+  for (int x=0; x < this->sizes[0] - (sparsity+1); x += sparsity) {
+    for (int y=0; y < this->sizes[1] - (sparsity+1); y += sparsity) {
+      if ((int)this->fixedGrid->getVoxel(x,y,0) == this->innerValue)
+	insideIndices.push_back(twodindex(x,y));
+      else if ((int)this->fixedGrid->getVoxel(x,y,0) == this->outerValue)
+	outsideIndices.push_back(twodindex(x,y));
+    }
+  }
+
+  cout << "Vector sizes: inside = " << insideIndices.size() 
+       << " and outside = " << outsideIndices.size() << endl;
+
+  // in order to limit memory allocation, create the two vectors that
+  // will hold the distances.
+  vector<float> insideDistances(insideIndices.size());
+  vector<float> outsideDistances(outsideIndices.size());
+
+  // the actual work of initialising the grid
+  for (int x=0; x < this->sizes[0]; x++) {
+    for (int y=0; y < this->sizes[1]; y++) {
+      initialValue = this->fixedGrid->getVoxel(x,y,0);
+      if (initialValue > (int)(this->innerValue) &&
+          initialValue < (int)(this->outerValue) ) {
+	// inside distance map
+	for (int i=0; i < insideIndices.size(); i++) {
+	  insideDistances[i] = sqrt(pow((x - insideIndices[i].x), 2) 
+				    + pow((y - insideIndices[i].y), 2));
+	}
+	// outside distance map
+	for (int i=0; i < outsideIndices.size(); i++) {
+	  outsideDistances[i] = sqrt(pow((x - outsideIndices[i].x), 2)
+				     + pow((y - outsideIndices[i].y), 2));
+	}
+	// sort em
+	stable_sort(insideDistances.begin(), outsideDistances.end());
+	stable_sort(outsideDistances.begin(), outsideDistances.end());
+	
+	// estimate the value: distance to inside / total distance
+	// times difference between inside and outside value
+	float totalDistance = insideDistances[0] + outsideDistances[0];
+	float ratioDistances = insideDistances[0] / totalDistance;
+	float differenceValue = this->outerValue - this->innerValue;
+	this->volume->setVoxel((ratioDistances * differenceValue) 
+			       + this->innerValue,x,y,0);
+      }
+    }
+    cout << x << endl;
+
+  }
+}
+	
+
 inline void laplacian2DGrid::getDerivatives( Real x, Real y,
                                              Real &dx, Real &dy ) {
   dx = gradientX->getInterpolatedVoxel(x,y,0,2);

@@ -156,6 +156,11 @@ int main(int argc, char* argv[]) {
                                gradientsType);
     grid->setVerbosity( vValue );
 
+    cout << "Guessing Initial Values" << endl;
+    grid->initialGridGuess(80);
+    grid->output(out_filename);
+    exit(0);
+
     cout << "Relaxing Equation." << endl;
     grid->relaxEquation(convergence, maxIterations);
 

@@ -4,6 +4,7 @@
 #include <mniLabelVolume.h>
 #include <mniVolume.h>
 #include <vector>
+#include <algo.h>
 #include <math.h>
 #include <fstream>
 #include "laplacianGlobals.h"
@@ -17,6 +18,14 @@ enum interpolation { NEAREST_NEIGHBOUR_INTERP = -1,
 		     CUBIC_INTERP = 2 };
 */
 static STRING XYdimOrder[] = {MIxspace, MIyspace};
+
+//! a class to hold the two dimensional index
+class twodindex {
+ public:
+  int x;
+  int y;
+  twodindex(int x,int y) {this->x = x; this->y = y;};
+};
 
 class laplacian2DGrid {
 protected:
@@ -80,6 +89,8 @@ public:
   void relaxEquation(float convergenceCriteria, int maxIterations);
   //! create a gradient volume in each direction
   void createGradients();
+  //! an initial guess for the solving based on distances.
+  void initialGridGuess(int sparsity=5);
   //! normalise the gradient volumes
   void normaliseGradients();
   //! integrate gradients using Euler's formula
