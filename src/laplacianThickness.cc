@@ -72,8 +72,6 @@ int main(int argc, char* argv[]) {
   Volume input_grid = create_mantle( likeFile,
 				     grey_surface,
 				     white_surface,
-				     outside_value,
-				     inside_value,
 				     include_white_boundary,
 				     include_grey_boundary );
   cout << "Mantle created" << endl;

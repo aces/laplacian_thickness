@@ -1,3 +1,10 @@
+2002-05-06	Jason Lerch	<jason@bic.mni.mcgill.ca>
+
+	* using function pointers for the integration step. Can now handle
+	a second order runge-kutta model. A fourth order runge-kutta is
+	still in the works, as are real options in order to let the user
+	control which approach to take.
+	
 2002-04-21	Jason Lerch	<jason@bic.mni.mcgill.ca>
 	* improved the layered thickness implementation
 2002-04-20	Jason Lerch	<jason@bic.mni.mcgill.ca>

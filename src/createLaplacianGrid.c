@@ -339,8 +339,6 @@ private  BOOLEAN  get_extrapolated_value(
 Volume create_mantle (   char *input_volume_filename,
 		       char *grey_surface_filename,
 		       char *white_surface_filename,
-		       Real outside_value,
-		       Real inside_value,
 		       int include_white_boundary,
 		       int include_grey_boundary )
 {
@@ -356,6 +354,8 @@ Volume create_mantle (   char *input_volume_filename,
   object_struct  **objects;  
   File_formats   format;
   int            n_objects, i;
+  Real outside_value = 0;
+  Real inside_value = 1;
 
 
   /* create the history string from the input arguments */

@@ -1,5 +1,113 @@
 #include "laplacianGrid.h"
 
+
+// void laplacianGrid::*integrationStep(vector<Real> &Xvector,
+// 				     vector<Real> &Yvector,
+// 				     vector<Real> &Zvector,
+// 				     Real dx, Real dy, Real dz, Real h,
+// 				     vector<Real>::iterator XinsertIt,
+// 				     vector<Real>::iterator YinsertIt,
+// 				     vector<Real>::iterator ZinsertIt,
+// 				     int currentStep) {}
+
+inline void laplacianGrid::getDerivatives( Real x, Real y, Real z,
+					   Real &dx, Real &dy, Real &dz ) {
+
+  dx = this->gradientX->getInterpolatedVoxel(x,y,z,2);
+  dy = this->gradientY->getInterpolatedVoxel(x,y,z,2);
+  dz = this->gradientZ->getInterpolatedVoxel(x,y,z,2);
+}
+
+// take an integration step using Euler's method
+inline void laplacianGrid::eulerStep(vector<Real> &Xvector, 
+				     vector<Real> &Yvector, 
+				     vector<Real> &Zvector,
+				     Real dx, Real dy, Real dz, Real h, 
+				     vector<Real>::iterator XinsertIt,
+				     vector<Real>::iterator YinsertIt,
+				     vector<Real>::iterator ZinsertIt,
+				     int currentIndex) {
+
+  Xvector.insert( XinsertIt, Xvector[currentIndex] + dx * h );
+  Yvector.insert( YinsertIt, Yvector[currentIndex] + dy * h );
+  Zvector.insert( ZinsertIt, Zvector[currentIndex] + dz * h );
+
+}
+
+inline void laplacianGrid::secondOrderRungeKuttaStep(
+					  vector<Real> &Xvector, 
+					  vector<Real> &Yvector, 
+					  vector<Real> &Zvector,
+					  Real dx, Real dy, Real dz, Real h, 
+					  vector<Real>::iterator XinsertIt,
+					  vector<Real>::iterator YinsertIt,
+					  vector<Real>::iterator ZinsertIt,
+					  int currentIndex) {
+
+  Real hh = h * 0.5;
+  Real kx, ky, kz;
+  Real ddx, ddy, ddz;
+
+  kx = Xvector[currentIndex] + dx * hh;
+  ky = Yvector[currentIndex] + dy * hh;
+  kz = Zvector[currentIndex] + dz * hh;
+						
+  this->getDerivatives(kx, ky, kz, ddx, ddy, ddz);
+
+  Xvector.insert( XinsertIt, Xvector[currentIndex] + ddx * h );
+  Yvector.insert( YinsertIt, Yvector[currentIndex] + ddy * h );
+  Zvector.insert( ZinsertIt, Zvector[currentIndex] + ddz * h );
+}
+  
+
+// take an integration step using a fourth order Runge-Kutta Model
+inline void laplacianGrid::rungeKuttaStep(vector<Real> &Xvector, 
+					  vector<Real> &Yvector, 
+					  vector<Real> &Zvector,
+					  Real dx, Real dy, Real dz, Real h, 
+					  vector<Real>::iterator XinsertIt,
+					  vector<Real>::iterator YinsertIt,
+					  vector<Real>::iterator ZinsertIt,
+					  int currentIndex) {
+  Real kx, ky, kz;
+  Real xx, xy, xz;
+  Real mx, my, mz;
+
+  Real hh = h*0.5;
+
+  // take first step
+  kx = Xvector[currentIndex] + dx * hh;
+  ky = Yvector[currentIndex] + dy * hh;
+  kz = Zvector[currentIndex] + dz * hh;
+
+  // re-evaluate derivatives based on half of previous step
+  this->getDerivatives(kx, ky, kz, xx, xy, xz);
+
+  // take second step
+  kx = Xvector[currentIndex] + xx * hh;
+  ky = Yvector[currentIndex] + xy * hh;
+  kz = Zvector[currentIndex] + xz * hh;
+
+  this->getDerivatives(kx, ky, kz, mx, my, mz);
+  
+  // third step
+  kx = Xvector[currentIndex] + mx * h;
+  mx += xx;
+  ky = Yvector[currentIndex] + my * h;
+  my += xy;
+  kz = Zvector[currentIndex] + mz * h;
+  mz += xz;
+
+//   this->getDerivatives(currentIndex + h
+
+  
+//   Xvector.insert( XinsertIt, kx[0]/6 + kx[1]/3 + kx[2]/3 + kx[3]/6);
+//   Yvector.insert( YinsertIt, ky[0]/6 + ky[1]/3 + ky[2]/3 + ky[3]/6);
+//   Zvector.insert( ZinsertIt, kz[0]/6 + kz[1]/3 + kz[2]/3 + kz[3]/6);
+
+}
+
+
 // constructor from file
 laplacianGrid::laplacianGrid(char* mantleFile, 
                              int innerValue, 
@@ -9,7 +117,7 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   this->outerValue = outerValue;
 
   // create the grid volume from file
-  this->fixedGrid = new mniLabelVolume(mantleFile);
+  this->fixedGrid = new mniVolume(mantleFile);
 
   // construct the volume from the mantle file, but signed
   this->volume = new mniVolume(mantleFile,
@@ -33,11 +141,8 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
   this->outerValue = outerValue;
 
   // take the volume_struct pointer as the grid
-  cout << "before" << endl;
-  this->fixedGrid = new mniLabelVolume(mantleVolume);
-  cout << "after" << endl;
-  this->volume = new mniVolume(this->fixedGrid, TRUE, NC_SHORT, TRUE);
-  cout << "end" << endl;
+  this->fixedGrid = new mniVolume(mantleVolume);
+  this->volume = new mniVolume(this->fixedGrid, FALSE, NC_SHORT, TRUE);
 
   this->initialiseVolumes();
 }
@@ -46,9 +151,9 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
 void laplacianGrid::initialiseVolumes() {
 
   // and construct the gradient volumes - using volume definition copy
-  this->gradientX = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
-  this->gradientY = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
-  this->gradientZ = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
+  this->gradientX = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
+  this->gradientY = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
+  this->gradientZ = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
 
 
   // set their real ranges - safe here since I don't care about
@@ -65,6 +170,10 @@ void laplacianGrid::initialiseVolumes() {
 
   // set default verbosity to 0
   this->verbosity = 0;
+  
+  // set the function pointer
+  this->integrationStep = &laplacianGrid::secondOrderRungeKuttaStep;
+
 }
 
 // one iteration of solving laplace's equation
@@ -76,11 +185,10 @@ float laplacianGrid::solveLaplace() {
     for (int v1=1; v1 < this->sizes[1]-1; v1++) {
       for (int v2=1; v2 < this->sizes[2]-1; v2++) {
         initialValue = this->fixedGrid->getVoxel(v0,v1,v2);
-        if (initialValue == this->innerValue ||
-            initialValue == this->outerValue) {
-          // do nothing
-        }
-        else {
+	//	cout << initialValue << endl;
+        if (initialValue > (this->innerValue) &&
+            initialValue < (this->outerValue) ) {
+	  //cout << "indeed" << endl;
           newValue = (this->volume->getVoxel(v0+1, v1, v2) + 
                       this->volume->getVoxel(v0, v1+1, v2) +
                       this->volume->getVoxel(v0, v1, v2+1) +
@@ -89,6 +197,7 @@ float laplacianGrid::solveLaplace() {
                       this->volume->getVoxel(v0, v1, v2-1) ) / 6;
           this->volume->setVoxel(newValue, v0, v1, v2);
           fieldEnergy += sqrt(newValue);
+	  //	  cout << fieldEnergy << endl;
         }
       }
     }
@@ -121,7 +230,7 @@ void laplacianGrid::relaxEquation(float convergenceCriteria,
 	     << " with convergence result of " << convergence << endl;
       }
       if ( convergence < convergenceCriteria )
-        break;
+	break;
       else if ( currentIteration >= maxIterations )
         break;
     }
@@ -138,8 +247,8 @@ void laplacianGrid::createGradients() {
   for (int x=1; x < this->sizes[0]-1; x++) {
     for (int y=1; y < this->sizes[1]-1; y++) {
       for (int z=1; z < this->sizes[2]-1; z++) {
-        if (this->fixedGrid->getVoxel(x,y,z) != this->innerValue &&
-            this->fixedGrid->getVoxel(x,y,z) != this->outerValue) {
+        if (this->fixedGrid->getVoxel(x,y,z) > this->innerValue &&
+            this->fixedGrid->getVoxel(x,y,z) < this->outerValue ) {
           this->gradientX->setVoxel((this->volume->getVoxel(x+1,y,z) - 
                                      this->volume->getVoxel(x-1,y,z)) / 2,
                                     x,y,z);
@@ -192,34 +301,13 @@ void laplacianGrid::normaliseGradients() {
       }
     }
   }
-  /*
-    cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
-    this->gradientX->output("gradientX.mnc");
-    this->gradientY->output("gradientY.mnc");
-    this->gradientZ->output("gradientZ.mnc");
-  */
+
+  //  cout << "Test: " << this->gradientX->getVoxel(123,96,108) << endl;
+  //  this->gradientX->output("gradientX.mnc");
+  //  this->gradientY->output("gradientY.mnc");
+  //  this->gradientZ->output("gradientZ.mnc");
 }
 
-// take an integration step using Euler's method
-inline void eulerStep(vector<Real> &Xvector, 
-			      vector<Real> &Yvector, 
-			      vector<Real> &Zvector,
-			      Real dx, Real dy, Real dz, Real h, 
-			      vector<Real>::iterator XinsertIt,
-			      vector<Real>::iterator YinsertIt,
-			      vector<Real>::iterator ZinsertIt,
-			      vector<Real>::iterator Xpos,
-			      vector<Real>::iterator Ypos,
-			      vector<Real>::iterator Zpos) {
-
-  Xvector.insert( XinsertIt, *Xpos + dx * h );
-  Yvector.insert( YinsertIt, *Ypos + dy * h );
-  Zvector.insert( ZinsertIt, *Zpos + dz * h );
-
-//   Xvector.push_back( *Xpos + dx * h );
-//   Yvector.push_back( *Ypos + dy * h );
-//   Zvector.push_back( *Zpos + dz * h );
-}
     
 
 // use Eulers method, first towards one then towards the other surface
@@ -242,55 +330,62 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
   vector<Real>::iterator yIt = Yvector.begin();
   vector<Real>::iterator zIt = Zvector.begin();
 
-  Real evaluation = this->fixedGrid->getVoxel((int) *xIt,
-                                              (int) *yIt,
-                                              (int) *zIt); 
+  Real evaluation = this->fixedGrid->getVoxel((int) Xvector[i],
+                                              (int) Yvector[i],
+                                              (int) Zvector[i]); 
 
 
   if (this->verbosity >= 5) {
     cout << "Start of createStreamline function." << endl;
     cout << "First evaluation: " << evaluation << endl;
-    cout << "Initial vectors (xyz): " << *xIt << " "
-         << *yIt << " " << *zIt << endl;
+    cout << "Initial vectors (xyz): " << Xvector[i] << " "
+         << Yvector[i] << " " << Zvector[i] << endl;
     cout << "Using H of: " << h << endl << endl;
   }
 
   // move towards outside surface first
   while (evaluation < this->outerValue) {
 
-    Real Xvalue = this->gradientX->getInterpolatedVoxel(*xIt,
-                                                        *yIt,
-                                                        *zIt,
+    //    cout << Xvector[i] << " " << Yvector[1] << " " << Zvector[i] << endl;
+
+    Real Xvalue = this->gradientX->getInterpolatedVoxel(Xvector[i],
+                                                        Yvector[i],
+                                                        Zvector[i],
                                                         0);
-    Real Yvalue = this->gradientY->getInterpolatedVoxel(*xIt,
-                                                        *yIt,
-                                                        *zIt,
+    Real Yvalue = this->gradientY->getInterpolatedVoxel(Xvector[i],
+                                                        Yvector[i],
+                                                        Zvector[i],
                                                         0);
-    Real Zvalue = this->gradientZ->getInterpolatedVoxel(*xIt,
-                                                        *yIt,
-                                                        *zIt,
+    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Xvector[i],
+                                                        Yvector[i],
+                                                        Zvector[i],
                                                         0);
 
     //    Xvector.push_back (Xvector[i] + Xvalue * h);
     //    Yvector.push_back (Yvector[i] + Yvalue * h);
     //    Zvector.push_back (Zvector[i] + Zvalue * h);
-    eulerStep(Xvector, Yvector, Zvector, Xvalue, Yvalue, Zvalue, h,
-	      Xvector.end(), Yvector.end(), Zvector.end(), 
-	      xIt, yIt, zIt);
+
+    (*this.*integrationStep)(Xvector, Yvector, Zvector, 
+			  Xvalue, Yvalue, Zvalue, h,
+			  Xvector.end(), Yvector.end(), Zvector.end(), i);
+
+    //eulerStep(Xvector, Yvector, Zvector, Xvalue, Yvalue, Zvalue, h,
+    //      Xvector.end(), Yvector.end(), Zvector.end(), 
+    //      xIt, yIt, zIt);
 	      
 
      if (this->verbosity >= 5) {
        cout << "Interpolated values: " << Xvalue << " " 
             << Yvalue << " " << Zvalue << endl;
-       cout << "Values pushed back: " << *xIt + Xvalue * h  << " "
-            << *yIt + Yvalue * h << " "
-            << *zIt + Zvalue * h << endl;
+       cout << "Values pushed back: " << Xvector[i] + Xvalue * h  << " "
+            << Yvector[i] + Yvalue * h << " "
+            << Zvector[i] + Zvalue * h << endl;
        cout << "I = " << i << endl << endl;
      }
 
-    cout << i << endl;
+     //    cout << i << endl;
     i++;
-    xIt++; yIt++; zIt++;
+    //    xIt++; yIt++; zIt++;
     // test for Not A Number
     if (Zvector[i] != Zvector[i] || 
         Xvector[i] != Xvector[i] || 
@@ -305,9 +400,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
       return;
     }
     else {
-      evaluation = this->fixedGrid->getVoxel((int)rint(Xvector[i]),
-                                           (int)rint(Yvector[i]),
-                                           (int)rint(Zvector[i]));
+      evaluation = this->fixedGrid->getInterpolatedVoxel((Xvector[i]),
+							 (Yvector[i]),
+							 (Zvector[i]));
     
       if (this->verbosity >=5 ) {
         cout << "Evaluation function: " << evaluation << endl << endl;
@@ -337,20 +432,25 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
     Real Xvalue = this->gradientX->getInterpolatedVoxel(Xvector[0],
                                                         Yvector[0],
                                                         Zvector[0],
-                                                        0);
+                                                        2);
     Real Yvalue = this->gradientY->getInterpolatedVoxel(Xvector[0],
                                                         Yvector[0],
                                                         Zvector[0],
-                                                        0);
+                                                        2);
     Real Zvalue = this->gradientZ->getInterpolatedVoxel(Xvector[0],
                                                         Yvector[0],
                                                         Zvector[0],
-                                                        0);
+                                                        2);
     
     // insert at the beginning, using inverse of h
-    Xvector.insert(xIt, Xvector[0] + Xvalue * (h * -1));
-    Yvector.insert(yIt, Yvector[0] + Yvalue * (h * -1));
-    Zvector.insert(zIt, Zvector[0] + Zvalue * (h * -1));
+    (*this.*integrationStep)(Xvector, Yvector, Zvector, 
+			  Xvalue, Yvalue, Zvalue, (h * -1),
+			  Xvector.begin(), Yvector.begin(), Zvector.begin(), 
+			  0);
+
+//     Xvector.insert(xIt, Xvector[0] + Xvalue * (h * -1));
+//     Yvector.insert(yIt, Yvector[0] + Yvalue * (h * -1));
+//     Zvector.insert(zIt, Zvector[0] + Zvalue * (h * -1));
 
     if (this->verbosity >= 5) {
       cout << "Interpolated values: " << Xvalue << " " 

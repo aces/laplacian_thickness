@@ -25,7 +25,7 @@ protected:
   //! Holds number of vertices in obj file
   int numVertices;
   //! Hold the fixed grid
-  mniLabelVolume *fixedGrid;
+  mniVolume *fixedGrid;
   //! Hold the gradient volumes
   mniVolume *gradientX, *gradientY, *gradientZ;
   //! For progress reports
@@ -34,6 +34,44 @@ protected:
   int verbosity;
   //! Sets up the necessary volume information
   void initialiseVolumes();
+  //! function pointer for the integration method to use.
+  void (laplacianGrid::*integrationStep)(vector<Real> &Xvector,
+			  vector<Real> &Yvector,
+			  vector<Real> &Zvector,
+			  Real dx, Real dy, Real dz, Real h,
+			  vector<Real>::iterator XinsertIt,
+			  vector<Real>::iterator YinsertIt,
+			  vector<Real>::iterator ZinsertIt,
+			  int currentStep);
+  void eulerStep(vector<Real> &Xvector,
+			  vector<Real> &Yvector,
+			  vector<Real> &Zvector,
+			  Real dx, Real dy, Real dz, Real h,
+			  vector<Real>::iterator XinsertIt,
+			  vector<Real>::iterator YinsertIt,
+			  vector<Real>::iterator ZinsertIt,
+			  int currentStep);
+  void rungeKuttaStep(vector<Real> &Xvector,
+			  vector<Real> &Yvector,
+			  vector<Real> &Zvector,
+			  Real dx, Real dy, Real dz, Real h,
+			  vector<Real>::iterator XinsertIt,
+			  vector<Real>::iterator YinsertIt,
+			  vector<Real>::iterator ZinsertIt,
+			  int currentStep);
+  void secondOrderRungeKuttaStep(vector<Real> &Xvector,
+			  vector<Real> &Yvector,
+			  vector<Real> &Zvector,
+			  Real dx, Real dy, Real dz, Real h,
+			  vector<Real>::iterator XinsertIt,
+			  vector<Real>::iterator YinsertIt,
+			  vector<Real>::iterator ZinsertIt,
+			  int currentStep);
+
+
+  void getDerivatives( Real x, Real y, Real z,
+		       Real &dx, Real &dy, Real &dz );
+
   
 public:
   //! constructor from corticalMantle

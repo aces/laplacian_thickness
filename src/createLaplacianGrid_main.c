@@ -23,13 +23,9 @@ int main( int argc, char *argv[] ) {
   STRING         grey_surface_filename, white_surface_filename;
   STRING         history;
 
-  Real           outside_value, inside_value;
   Volume         out_volume;
   int            sizes[MAX_DIMENSIONS];
   int            x,y,z,i;
-
-  outside_value = 10000;
-  inside_value = 0;
 
   /* create the history string from the input arguments */
   /* should check for overflow */
@@ -53,8 +49,6 @@ int main( int argc, char *argv[] ) {
   out_volume = create_mantle ( input_volume_filename,
 			       grey_surface_filename,
 			       white_surface_filename,
-			       outside_value,
-			       inside_value,
 			       include_white_boundary,
 			       include_grey_boundary );
   output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
