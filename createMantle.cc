@@ -42,8 +42,15 @@ int main(int argc, char *argv[]) {
 
   mantle->setVerbosity(1); // should be made an argument?
   mantle->scanObjectsToVolume();
-  mantle->initialiseLaplacianGrid(outsideValue, insideValue, mantleValue,
-                                  FALSE, TRUE);
+
+  //  mantle->initialiseLaplacianGrid(outsideValue, insideValue, mantleValue,
+  //FALSE, TRUE);
+
+  short whiteInts, greyInts;
+
+  mantle->countIntersections(76,120,71,greyInts, whiteInts);
+  cout << "White: " << whiteInts << " Grey: " << greyInts << endl;
+
   mantle->output(outputFile);
 }
 

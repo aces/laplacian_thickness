@@ -1,12 +1,8 @@
-INCLUDES = $(MNI_INCLUDES)
-LDADD = $(MNI_LIBS) -lm
+bin_PROGRAMS = laplace_initialisation laplacian_thickness_volume
 
-bin_PROGRAMS = create_cortical_mantle create_laplacian_volume
+laplace_initialisation_SOURCES = laplace_initialisation.c
 
-create_cortical_mantle_SOURCES = createMantle.cc corticalMantle.cc \
-	ParseArgv.c
-
-create_laplacian_volume_SOURCES = solveLaplace.cc laplacianGrid.cc
+laplacian_thickness_volume_SOURCES = solveLaplace.cc laplacianGrid.cc
 
 
 
