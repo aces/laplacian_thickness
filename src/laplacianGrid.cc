@@ -318,7 +318,7 @@ void laplacianGrid::normaliseGradients() {
     
 
 // use Eulers method, first towards one then towards the other surface
-void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
+void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
                                      vector<Real> &Xvector, 
                                      vector<Real> &Yvector,
                                      vector<Real> &Zvector) {
@@ -478,9 +478,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
     }
     else {
 
-      evaluation = this->fixedGrid->getVoxel((int)rint(Xvector[0]),
-                                             (int)rint(Yvector[0]),
-                                             (int)rint(Zvector[0]));
+      evaluation = this->fixedGrid->getInterpolatedVoxel(Xvector[0],
+							 Yvector[0],
+							 Zvector[0]);
       if (Xvector.size() > 50)
         evaluation = this->innerValue;
       
@@ -517,61 +517,62 @@ Real laplacianGrid::streamLength(vector<Real> &Xvector,
 }
 
 void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
-	File_formats 	format;
-	int 		point, nPoints, nObjects;
-	Point 		*points;
-	object_struct 	**objects;
-	Real            *voxel, length;
+  File_formats 	format;
+  int 		point, nPoints, nObjects;
+  Point 	*points;
+  object_struct **objects;
+  Real          *voxel, length;
+  Real          interpVoxel[3];
 		
-	// open the file
-	if( input_graphics_file( objFile, &format, &nObjects, &objects )
-			!= OK ) {
-		cerr << "ERROR: could not open file " << objFile << endl;
-		exit(1);
-	}
-	
-	if( nObjects != 1 ) {
-	  cerr << "WARNING: more than one object in " << objFile << endl;
-	}
-	
-	nPoints = get_object_points( objects[0], &points );
+  // open the file
+  if( input_graphics_file( objFile, &format, &nObjects, &objects )
+      != OK ) {
+    cerr << "ERROR: could not open file " << objFile << endl;
+    exit(1);
+  }
+  
+  if( nObjects != 1 ) {
+    cerr << "WARNING: more than one object in " << objFile << endl;
+  }
+  
+  nPoints = get_object_points( objects[0], &points );
   this->thicknessPerVertex = new Real[nPoints];
   this->numVertices = nPoints;
-	
-	initialize_progress_report( &this->progressReport, FALSE, nPoints,
-	                            "Computing thickness streamlines" );
- 	for (int i=0; i < nPoints; i++) {
- 	  voxel = this->fixedGrid->convertWorldToVoxel(
- 	                            RPoint_x(points[i]),
- 	                            RPoint_y(points[i]),
- 	                            RPoint_z(points[i]) );
- 	
-  	vector<Real> xv, yv, zv;
-//  	cout << voxel[0] << " " << voxel[1] << " " << voxel[2] << endl;
-  	if (this->fixedGrid->getVoxel(int(rint(voxel[0])), 
-				      int(rint(voxel[1])), 
-				      int(rint(voxel[2]))) 
-				      < 6000 &&
-				      this->fixedGrid->getVoxel
-				      (int(rint(voxel[0])), 
-				       int(rint(voxel[1])), 
-				       int(rint(voxel[2]))) 
-				      > 4000) {
-  	  this->createStreamline( (int)rint(voxel[0]),
-	                            (int)rint(voxel[1]),
-	                            (int)rint(voxel[2]),
-	                            h, xv, yv, zv );
-    	length = this->streamLength( xv, yv, zv );
-//    	cout << "Actually computing streamlines." << endl;
-   } else {
+  
+  initialize_progress_report( &this->progressReport, FALSE, nPoints,
+			      "Computing thickness streamlines" );
+  for (int i=0; i < nPoints; i++) {
+    voxel = this->fixedGrid->convertWorldToVoxel(
+						 RPoint_x(points[i]),
+						 RPoint_y(points[i]),
+						 RPoint_z(points[i]) );
+    
+    vector<Real> xv, yv, zv;
+    //  	cout << voxel[0] << " " << voxel[1] << " " << voxel[2] << endl;
+    if (this->fixedGrid->getInterpolatedVoxel(voxel[0], 
+					      voxel[1], 
+					      voxel[2]) 
+	< this->outerValue &&
+	this->fixedGrid->getInterpolatedVoxel
+	(voxel[0], 
+	 voxel[1], 
+	 voxel[2]) 
+	> this->innerValue) {
+      this->createStreamline(voxel[0],
+			     voxel[1],
+			     voxel[2],
+			     h, xv, yv, zv );
+      length = this->streamLength( xv, yv, zv );
+      //    	cout << "Actually computing streamlines." << endl;
+    } else {
       length = 0;
       if ( this->verbosity > 1 ) {
         cout << "Could not evaluate at vertex " << i << endl;
       }
-   }
-	  this->thicknessPerVertex[i] = length;
-	  update_progress_report( &this->progressReport, i );
-	}
+    }
+    this->thicknessPerVertex[i] = length;
+    update_progress_report( &this->progressReport, i );
+  }
 }
 	
 
@@ -587,7 +588,6 @@ void laplacianGrid::computeAllThickness(Real h) {
       for (int v3=1; v3 < this->sizes[2]-1; v3++) {
         if (this->fixedGrid->getVoxel(v1, v2, v3) > this->innerValue && 
             this->fixedGrid->getVoxel(v1, v2, v3) < this->outerValue) {
-	  //	  cout << v1 << " " << v2 << " " << v3 << endl;
           vector<Real> xv, yv, zv;
           this->createStreamline(v1, v2, v3, h, xv, yv, zv);
           Real length = this->streamLength(xv, yv, zv);

@@ -102,7 +102,7 @@ public:
   void createThicknessMetric();
   //! create a streamline at given voxel
   void testFunction(vector<Real> &t);
-  void createStreamline(int x0, int y0, int z0, Real h, 
+  void createStreamline(Real x0, Real y0, Real z0, Real h, 
                         vector<Real> &Xvector,
                         vector<Real> &Yvector,
                         vector<Real> &Zvector);
