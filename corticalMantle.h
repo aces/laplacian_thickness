@@ -36,10 +36,14 @@ private:
   STRING clsFile;
   //! Holds the volume to work with
   Volume mantle;
+  //! The values used in scanning the objects
+  int greyValue, whiteValue, overlapValue;
   //! The dimension names
   char* dimNames[];
   //! Dimension sizes
   int sizes[MAX_DIMENSIONS];
+  //! Area fill based on neighbourhood information
+  int neighbourFill( int fillValue );
 public:
   //! Constructor
   /*!
