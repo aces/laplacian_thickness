@@ -22,7 +22,8 @@ void main(int argc, char *argv[]) {
   initialise_volume(volume);
 
   get_volume_sizes(volume, sizes);
-  
+
+  // need to actually check for relaxation
   while (i < 15) {
     solve_laplace(volume, sizes);
     i++;
