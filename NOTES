@@ -1,9 +1,0 @@
-* There appears to be a problem in check_if_between_surfaces as it
-  does still ocassionally find spots outside of the cortex.
-    * This seems to be related to the fact that contrary to all
-    * claims, the surfaces do infact intersect - see entorhinal
-    * cortex.	
-
-* Replace absolute values with 
-
-

@@ -86,8 +86,7 @@ create_mantle.o: create_mantle.cc /usr/include/g++-3/iostream.h \
   /usr/include/g++-3/stl_construct.h /usr/include/g++-3/stl_function.h \
   /usr/include/g++-3/stl_map.h /usr/include/g++-3/stl_multimap.h \
   /usr/include/g++-3/list /usr/include/g++-3/stl_uninitialized.h \
-  /usr/include/g++-3/stl_list.h relax_mantle.h surface_volume_defs.h \
-  jplPoint.h /usr/include/g++-3/iostream jplPointMap.h
+  /usr/include/g++-3/stl_list.h relax_mantle.h surface_volume_defs.h
 create_mantle.cc :
 /usr/include/g++-3/iostream.h :
 /usr/include/g++-3/streambuf.h :
@@ -213,6 +212,3 @@ cortical_mantle.h :
 /usr/include/g++-3/stl_list.h :
 relax_mantle.h :
 surface_volume_defs.h :
-jplPoint.h :
-/usr/include/g++-3/iostream :
-jplPointMap.h :

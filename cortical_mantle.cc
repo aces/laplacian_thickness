@@ -99,56 +99,6 @@ int check_if_between_surfaces(Volume object_intersects,
   }
 }
 
-void expand_from_point_in_mantle(Volume object_intersects, 
-				jplPointMap* point_map,
-				int* sizes,
-				int coord1, int coord2, int coord3) {
-  short v1, v2, v3;
-  bool end_of_traverse = false;
-  list<jplPoint> search_list(100);
-
-  // add first element to the search list
-  search_list.push_back(jplPoint (coord1, coord2, coord3));
-
-  while (! search_list.empty()) {
-    jplPoint *current_index = new jplPoint(search_list.front());
-
-    // now check all of the points in the surrounding grid
-    for (v1 = current_index->v1-1; v1 <= current_index->v1+2; v1++) {
-      for (v2 = current_index->v2-1; v2 <= current_index->v2+2; v2++) {
-	for (v3 = current_index->v3-1; v3 <= current_index->v3+2; v3++) {
-	  if (v1 < sizes[0] && v1 >= 0 &&
-	      v2 < sizes[1] && v2 >= 0 &&
-	      v3 < sizes[2] && v3 >= 0) {
-	    if (point_map->findPoint(v1, v2, v3) == 0){
-	      // add to points to check over
-	      search_list.push_back(jplPoint (v1,v2,v3));
-	      point_map->addPoint(v1,v2,v3, 4);
-	    }
-	  }
-	}
-      }
-    }
-    
-    // move the focus point and start again
-    search_list.pop_front();
-    delete current_index;
-  }
-
-    /* conditions to check
-       x+1, y, z
-       X+1, y+1, z
-       x+1, y+1, z+1
-       x+1, y, z+1
-       x+1, y-1, z,
-       x+1, y-1, z-1,
-       x+1, y-1, z+1
-       x+1, y, z-1,
-       x+1, y+1, z-1 
-    */
-  
-}  
-
 /*
   find_cortical_mantle: 
   takes two arguments: a label volume, which will be modified, and a regular

@@ -86,8 +86,7 @@ cortical_mantle.o: cortical_mantle.cc cortical_mantle.h \
   /usr/local/mni/include/bicpl/vol_prototypes.h \
   /usr/local/mni/include/bicpl/images.h \
   /usr/local/mni/include/bicpl/image_prototypes.h relax_mantle.h \
-  surface_volume_defs.h jplPoint.h /usr/include/g++-3/iostream \
-  jplPointMap.h
+  surface_volume_defs.h
 cortical_mantle.cc :
 cortical_mantle.h :
 /usr/include/g++-3/iostream.h :
@@ -212,6 +211,3 @@ cortical_mantle.h :
 /usr/local/mni/include/bicpl/image_prototypes.h :
 relax_mantle.h :
 surface_volume_defs.h :
-jplPoint.h :
-/usr/include/g++-3/iostream :
-jplPointMap.h :

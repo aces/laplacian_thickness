@@ -37,8 +37,6 @@ void main(int argc, char *argv[]) {
   Volume object_intersects, cortical_mantle, tmp_volume;
   char* dimnames[] = { MIzspace, MIxspace, MIyspace };
   int returnval, sizes[MAX_DIMENSIONS];
-  jplPointMap point_map;
-
 
   if ( ParseArgv( &argc, argv, argTable, 0 ) || (argc != 3) ){
     cerr << "Usage: create_mantle [options] intersects.mnc out.mnc" << endl;
@@ -81,8 +79,6 @@ void main(int argc, char *argv[]) {
   save_label_volume(output, intersects, object_intersects, 10);
 
   delete_volume(object_intersects);
-
-
 
 }
 
