@@ -1,17 +1,38 @@
 #include "laplacianGrid.h"
 
-void main(int argc, char* argv[]) {
+extern "C" {
+#include "ParseArgv.h"
+}
+
+// set up argument parsing defaults
+Real hValue         = 1;
+int vValue          = 1;
+
+// argument parsing table
+ArgvInfo argTable[] = {
+  { "-h", ARGV_FLOAT, (char *)0, (char *) &hValue,
+    "H value to use for Eulerian integration" },
+  { "-v", ARGV_INT, (char *)0, (char *) &vValue,
+    "Verbosity level (higher = more verbose)" },
+
+  { NULL, ARGV_END, NULL, NULL, NULL }
+};
+
+int main(int argc, char* argv[]) {
   vector<Real> xv, yv, zv;
   vector<Real>::iterator xit, yit, zit;
 
+  if ( ParseArgv(&argc, argv, argTable, 0) || (argc != 3 )) {
+    cerr << "Usage: " << argv[0] << " [options] input_grid.mnc output_thickness.mnc" << endl;
+    return (1);
+  }
 
   laplacianGrid *grid = new laplacianGrid(argv[1], 0, 10000);
 
-  //  grid->setVerbosity(10);
+  grid->setVerbosity( vValue );
 
   cout << "Relaxing Equation." << endl;
   grid->relaxEquation(-1, 25);
-  //  grid->output("grid.mnc");
   cout << "Creating gradients." << endl;
   grid->createGradients();
   cout << "Normalising gradients." << endl;
@@ -36,9 +57,10 @@ void main(int argc, char* argv[]) {
   //  grid->createStreamline(83,172,91, 1, xv, yv, zv);
 
   cout << "Beginning computation of thicknesses." << endl;
-  grid->computeAllThickness(0.1);
+  grid->computeAllThickness( hValue );
 
   grid->output(argv[2]);
+  return (0);
 
 }
 

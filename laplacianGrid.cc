@@ -83,6 +83,10 @@ void laplacianGrid::relaxEquation(float convergenceCriteria,
   while (convergenceResult > convergenceCriteria &&
          currentIteration < maxIterations) {
     convergenceResult = this->solveLaplace();
+    if (this->verbosity >= 1) {
+      cout << "Converging: iteration # " << currentIteration 
+           << " with convergence result of " << convergenceResult << endl;
+    }
     currentIteration++;
   }
 }
@@ -137,7 +141,7 @@ void laplacianGrid::normaliseGradients() {
 
           nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
           ny = dy / sqrt( pow(dy,2) + pow(dx,2) / pow(dz,2) );
-          nz = dz / sqrt( pow(dz,2) + pow(dx,2) / pow(dy,2) );
+          nz = dz / sqrt( pow(dz,2) + pow(dy,2) / pow(dx,2) );
 	  //          cout << "NX: " << nx << endl;
 	  //          cout << "NY: " << ny << endl;
 	  //          cout << "NZ: " << nz << endl;
@@ -220,8 +224,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
     if (Zvector[i] != Zvector[i] || 
         Xvector[i] != Xvector[i] || 
         Yvector[i] != Yvector[i]) {
-      if (this->verbosity >= 1) {
-        cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      if (this->verbosity >= 2) {
+        cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " 
+             << z0 << endl;
         cerr << "with values: " << Xvector[i] << " " << Yvector[i] << " "
              << Zvector[i] << endl;
       }
@@ -239,26 +244,6 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
       // test for runaway resource
       if (Xvector.size() > 50)
         evaluation = this->outerValue;
-
-    // debugging code:
-    /*
-    cout << "Iteration: " << i << endl
-         << "Xvalue: " << Xvalue << endl
-         << "Yvalue: " << Yvalue << endl
-         << "Zvalue: " << Zvalue << endl
-         << "Xvector: " << Xvector[i] << endl
-         << "Yvector: " << Yvector[i] << endl
-         << "Zvector: " << Zvector[i] << endl
-         << "Vector Size: " << Xvector.size() << endl
-         << "Vector Capacity: " << Xvector.capacity() << endl
-         << "Grid Value: " << this->fixedGrid->getVoxel(rint(Zvector[i]),
-                                                        rint(Xvector[i]),
-                                                        rint(Yvector[i])) <<endl
-         << "Evaluation: " << evaluation << endl
-         << "Outer value: " << this->outerValue << endl
-         << "Int test: " << rint(5.4) 
-         << endl << endl;
-    */
     }
     if (this->verbosity >= 5) {
       cout << "--------------------------" << endl << endl;
@@ -309,8 +294,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
     if (Zvector[0] != Zvector[0] || 
         Xvector[0] != Xvector[0] || 
         Yvector[0] != Yvector[0]) {
-      if (this->verbosity >=1 ) {
-        cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " << z0 << endl;
+      if (this->verbosity >=2 ) {
+        cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " 
+             << z0 << endl;
       }
       return;
     }
