@@ -1,0 +1,209 @@
+jplPointMap.o: jplPointMap.cc jplPointMap.h \
+  /usr/local/mni/include/volume_io/volume_io.h \
+  /usr/local/mni/include/volume_io/basic.h /usr/include/stdlib.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/stubs.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/bits/types.h \
+  /usr/include/bits/pthreadtypes.h /usr/include/bits/sched.h \
+  /usr/include/time.h /usr/include/endian.h /usr/include/bits/endian.h \
+  /usr/include/sys/select.h /usr/include/bits/select.h \
+  /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h \
+  /usr/include/alloca.h /usr/include/stdio.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stdarg.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+  /usr/include/bits/wchar.h /usr/include/gconv.h \
+  /usr/include/bits/stdio_lim.h /usr/include/bits/stdio.h \
+  /usr/include/memory.h /usr/include/string.h \
+  /usr/local/mni/include/volume_io/def_math.h /usr/include/math.h \
+  /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h \
+  /usr/include/bits/mathcalls.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/float.h \
+  /usr/include/bits/mathinline.h \
+  /usr/local/mni/include/volume_io/system_dependent.h \
+  /usr/local/mni/include/volume_io/string_funcs.h \
+  /usr/local/mni/include/volume_io/files.h \
+  /usr/local/mni/include/volume_io/arrays.h \
+  /usr/local/mni/include/volume_io/alloc.h \
+  /usr/local/mni/include/volume_io/geom_structs.h \
+  /usr/local/mni/include/volume_io/progress.h \
+  /usr/local/mni/include/volume_io/geometry.h \
+  /usr/local/mni/include/volume_io/volume.h /usr/local/mni/include/minc.h \
+  /usr/local/mni/include/netcdf.h \
+  /usr/local/mni/include/volume_io/transforms.h \
+  /usr/local/mni/include/volume_io/multidim.h \
+  /usr/local/mni/include/volume_io/volume_cache.h \
+  /usr/local/mni/include/volume_io/vol_io_prototypes.h \
+  /usr/local/mni/include/bicpl.h \
+  /usr/local/mni/include/bicpl/data_structures.h \
+  /usr/local/mni/include/bicpl/objects.h \
+  /usr/local/mni/include/bicpl/obj_defs.h \
+  /usr/local/mni/include/bicpl/stack.h \
+  /usr/local/mni/include/bicpl/bintree.h \
+  /usr/local/mni/include/bicpl/colours.h \
+  /usr/local/mni/include/bicpl/object_prototypes.h \
+  /usr/local/mni/include/bicpl/bitlist.h \
+  /usr/local/mni/include/bicpl/hash.h \
+  /usr/local/mni/include/bicpl/priority_queue.h \
+  /usr/local/mni/include/bicpl/queue.h \
+  /usr/local/mni/include/bicpl/skiplist.h \
+  /usr/local/mni/include/bicpl/ds_prototypes.h \
+  /usr/local/mni/include/bicpl/geom.h \
+  /usr/local/mni/include/bicpl/geom_prototypes.h \
+  /usr/local/mni/include/bicpl/trans.h \
+  /usr/local/mni/include/bicpl/compute_xfm.h \
+  /usr/local/mni/include/bicpl/trans_prototypes.h \
+  /usr/local/mni/include/bicpl/numerical.h \
+  /usr/local/mni/include/bicpl/amoeba.h \
+  /usr/local/mni/include/bicpl/histogram.h \
+  /usr/local/mni/include/bicpl/minimization.h \
+  /usr/local/mni/include/bicpl/statistics.h \
+  /usr/local/mni/include/bicpl/numeric_prototypes.h \
+  /usr/local/mni/include/bicpl/prog_utils.h \
+  /usr/local/mni/include/bicpl/global_lookup.h \
+  /usr/local/mni/include/bicpl/prog_prototypes.h \
+  /usr/local/mni/include/bicpl/vols.h \
+  /usr/local/mni/include/bicpl/colour_coding.h \
+  /usr/local/mni/include/bicpl/vol_prototypes.h \
+  /usr/local/mni/include/bicpl/images.h \
+  /usr/local/mni/include/bicpl/image_prototypes.h /usr/include/g++-3/map \
+  /usr/include/g++-3/stl_tree.h /usr/include/g++-3/stl_algobase.h \
+  /usr/include/g++-3/stl_config.h /usr/include/g++-3/stl_relops.h \
+  /usr/include/g++-3/stl_pair.h /usr/include/g++-3/type_traits.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/limits.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/syslimits.h \
+  /usr/include/limits.h /usr/include/bits/posix1_lim.h \
+  /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+  /usr/include/bits/posix2_lim.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new.h \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new \
+  /usr/lib/gcc-lib/i386-redhat-linux/2.96/include/exception \
+  /usr/include/g++-3/iostream.h /usr/include/g++-3/streambuf.h \
+  /usr/include/g++-3/stl_iterator.h /usr/include/g++-3/stl_alloc.h \
+  /usr/include/assert.h /usr/include/pthread.h /usr/include/sched.h \
+  /usr/include/bits/time.h /usr/include/signal.h \
+  /usr/include/bits/initspin.h /usr/include/bits/sigthread.h \
+  /usr/include/g++-3/stl_construct.h /usr/include/g++-3/stl_function.h \
+  /usr/include/g++-3/stl_map.h /usr/include/g++-3/stl_multimap.h \
+  jplPoint.h /usr/include/g++-3/iostream
+jplPointMap.cc :
+jplPointMap.h :
+/usr/local/mni/include/volume_io/volume_io.h :
+/usr/local/mni/include/volume_io/basic.h :
+/usr/include/stdlib.h :
+/usr/include/features.h :
+/usr/include/sys/cdefs.h :
+/usr/include/gnu/stubs.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stddef.h :
+/usr/include/sys/types.h :
+/usr/include/bits/types.h :
+/usr/include/bits/pthreadtypes.h :
+/usr/include/bits/sched.h :
+/usr/include/time.h :
+/usr/include/endian.h :
+/usr/include/bits/endian.h :
+/usr/include/sys/select.h :
+/usr/include/bits/select.h :
+/usr/include/bits/sigset.h :
+/usr/include/sys/sysmacros.h :
+/usr/include/alloca.h :
+/usr/include/stdio.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/stdarg.h :
+/usr/include/libio.h :
+/usr/include/_G_config.h :
+/usr/include/wchar.h :
+/usr/include/bits/wchar.h :
+/usr/include/gconv.h :
+/usr/include/bits/stdio_lim.h :
+/usr/include/bits/stdio.h :
+/usr/include/memory.h :
+/usr/include/string.h :
+/usr/local/mni/include/volume_io/def_math.h :
+/usr/include/math.h :
+/usr/include/bits/huge_val.h :
+/usr/include/bits/mathdef.h :
+/usr/include/bits/mathcalls.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/float.h :
+/usr/include/bits/mathinline.h :
+/usr/local/mni/include/volume_io/system_dependent.h :
+/usr/local/mni/include/volume_io/string_funcs.h :
+/usr/local/mni/include/volume_io/files.h :
+/usr/local/mni/include/volume_io/arrays.h :
+/usr/local/mni/include/volume_io/alloc.h :
+/usr/local/mni/include/volume_io/geom_structs.h :
+/usr/local/mni/include/volume_io/progress.h :
+/usr/local/mni/include/volume_io/geometry.h :
+/usr/local/mni/include/volume_io/volume.h :
+/usr/local/mni/include/minc.h :
+/usr/local/mni/include/netcdf.h :
+/usr/local/mni/include/volume_io/transforms.h :
+/usr/local/mni/include/volume_io/multidim.h :
+/usr/local/mni/include/volume_io/volume_cache.h :
+/usr/local/mni/include/volume_io/vol_io_prototypes.h :
+/usr/local/mni/include/bicpl.h :
+/usr/local/mni/include/bicpl/data_structures.h :
+/usr/local/mni/include/bicpl/objects.h :
+/usr/local/mni/include/bicpl/obj_defs.h :
+/usr/local/mni/include/bicpl/stack.h :
+/usr/local/mni/include/bicpl/bintree.h :
+/usr/local/mni/include/bicpl/colours.h :
+/usr/local/mni/include/bicpl/object_prototypes.h :
+/usr/local/mni/include/bicpl/bitlist.h :
+/usr/local/mni/include/bicpl/hash.h :
+/usr/local/mni/include/bicpl/priority_queue.h :
+/usr/local/mni/include/bicpl/queue.h :
+/usr/local/mni/include/bicpl/skiplist.h :
+/usr/local/mni/include/bicpl/ds_prototypes.h :
+/usr/local/mni/include/bicpl/geom.h :
+/usr/local/mni/include/bicpl/geom_prototypes.h :
+/usr/local/mni/include/bicpl/trans.h :
+/usr/local/mni/include/bicpl/compute_xfm.h :
+/usr/local/mni/include/bicpl/trans_prototypes.h :
+/usr/local/mni/include/bicpl/numerical.h :
+/usr/local/mni/include/bicpl/amoeba.h :
+/usr/local/mni/include/bicpl/histogram.h :
+/usr/local/mni/include/bicpl/minimization.h :
+/usr/local/mni/include/bicpl/statistics.h :
+/usr/local/mni/include/bicpl/numeric_prototypes.h :
+/usr/local/mni/include/bicpl/prog_utils.h :
+/usr/local/mni/include/bicpl/global_lookup.h :
+/usr/local/mni/include/bicpl/prog_prototypes.h :
+/usr/local/mni/include/bicpl/vols.h :
+/usr/local/mni/include/bicpl/colour_coding.h :
+/usr/local/mni/include/bicpl/vol_prototypes.h :
+/usr/local/mni/include/bicpl/images.h :
+/usr/local/mni/include/bicpl/image_prototypes.h :
+/usr/include/g++-3/map :
+/usr/include/g++-3/stl_tree.h :
+/usr/include/g++-3/stl_algobase.h :
+/usr/include/g++-3/stl_config.h :
+/usr/include/g++-3/stl_relops.h :
+/usr/include/g++-3/stl_pair.h :
+/usr/include/g++-3/type_traits.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/limits.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/syslimits.h :
+/usr/include/limits.h :
+/usr/include/bits/posix1_lim.h :
+/usr/include/bits/local_lim.h :
+/usr/include/linux/limits.h :
+/usr/include/bits/posix2_lim.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new.h :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/new :
+/usr/lib/gcc-lib/i386-redhat-linux/2.96/include/exception :
+/usr/include/g++-3/iostream.h :
+/usr/include/g++-3/streambuf.h :
+/usr/include/g++-3/stl_iterator.h :
+/usr/include/g++-3/stl_alloc.h :
+/usr/include/assert.h :
+/usr/include/pthread.h :
+/usr/include/sched.h :
+/usr/include/bits/time.h :
+/usr/include/signal.h :
+/usr/include/bits/initspin.h :
+/usr/include/bits/sigthread.h :
+/usr/include/g++-3/stl_construct.h :
+/usr/include/g++-3/stl_function.h :
+/usr/include/g++-3/stl_map.h :
+/usr/include/g++-3/stl_multimap.h :
+jplPoint.h :
+/usr/include/g++-3/iostream :

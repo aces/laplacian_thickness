@@ -1,0 +1,54 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:924: checking for a BSD compatible install
+configure:977: checking whether build environment is sane
+configure:1034: checking whether make sets ${MAKE}
+configure:1080: checking for working aclocal
+configure:1093: checking for working autoconf
+configure:1106: checking for working automake
+configure:1119: checking for working autoheader
+configure:1132: checking for working makeinfo
+configure:1174: checking for gcc
+configure:1287: checking whether the C compiler (gcc  ) works
+configure:1303: gcc -o conftest    conftest.c  1>&5
+configure:1329: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:1334: checking whether we are using GNU C
+configure:1362: checking whether gcc accepts -g
+configure:1398: checking for c++
+configure:1430: checking whether the C++ compiler (c++  ) works
+configure:1446: c++ -o conftest    conftest.C  1>&5
+configure:1472: checking whether the C++ compiler (c++  ) is a cross-compiler
+configure:1477: checking whether we are using GNU C++
+configure:1505: checking whether c++ accepts -g
+configure:1548: checking for a BSD compatible install
+configure:1601: checking whether make sets ${MAKE}
+configure:1630: checking for ranlib
+configure:1667: checking for perl5
+configure:1715: checking how to run the C preprocessor
+configure:1824: checking whether to use netcdf library
+configure:1885: checking where to find the netcdf header files
+configure:1912: checking for netcdf.h
+configure:1967: checking for ncopen in -lnetcdf
+configure:2063: checking whether to use minc library
+configure:2124: checking where to find the minc header files
+configure:2151: checking for minc.h
+configure:2206: checking for miicv_create in -lminc
+configure:2302: checking whether to use volumeio library
+configure:2363: checking where to find the volumeio header files
+configure:2390: checking for volume_io.h
+configure:2445: checking for input_volume in -lvolume_io
+configure:2541: checking whether to use bicpl library
+configure:2602: checking where to find the bicpl header files
+configure:2629: checking for bicpl.h
+configure:2684: checking for input_graphics_file in -lbicpl
+configure:2761: checking for ANSI C header files
+configure:2868: checking for float.h
+configure:2868: checking for limits.h
+configure:2868: checking for malloc.h
+configure:2910: checking for inline
+configure:2950: checking for working const
+configure:3025: checking for size_t
+configure:3064: checking for vprintf
+configure:3171: checking for strtod
+configure:3171: checking for strtol
