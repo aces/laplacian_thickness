@@ -7,6 +7,8 @@
 #include <math.h>
 #include "corticalMantle.h"
 
+using namespace std;
+
 class laplacianGrid {
 protected:
   //! Hold the volume sizes

@@ -4,6 +4,8 @@ extern "C" {
 #include "ParseArgv.h"
 }
 
+using namespace std;
+
 // set up argument parsing defaults
 Real hValue         = 1;
 int vValue          = 1;
