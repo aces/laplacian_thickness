@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
   }
   
   // will hold the polygons for each of the layers
-  int num_layers = 8;
+  int num_layers = 1;
 
   vector<polygons_struct> layers(num_layers);
 
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
   create_polygon_bintrees( layers );
   for (int i=0; i < polygons1->n_points; i++) {
     //    Real dist = measure_normal_thickness( layers, i );
-    Real dist = layered_normals_thickness( layers, i );
+    Real dist = measure_normal_thickness( layers, i );
     
     thickness_output << dist << endl;
   }

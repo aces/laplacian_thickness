@@ -1,5 +1,6 @@
 Versions and Tags:
 ------------------
+(version information moved to NEWS file)
 ver_0-3-1: switched to using NC_SHORT as the internal type to
            represent the gradient volumes. 
 ver_0-3: Initialisation code more flexible, used in third pipe-run.
