@@ -345,6 +345,9 @@ int main ( int argc, char *argv[] )
   int            sizes[MAX_DIMENSIONS];
   int            x,y,z;
   Real           white_value, grey_value;
+  object_struct  **objects;  
+  File_formats   format;
+  int            n_objects;
 
   outside_value = 0;
   inside_value = 1;
@@ -423,6 +426,11 @@ int main ( int argc, char *argv[] )
       }
     }
   }
+
+  /* force inclusion of the white boundary */
+  input_graphics_file(white_surface_filename, &format, &n_objects,
+                      &objects);
+  scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
 
   output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
                 out_volume, "", NULL );
