@@ -10,6 +10,9 @@
 using namespace std;
 
 enum integrator { EULER, SECOND_ORDER_RK, FOURTH_ORDER_RK };
+enum interpolation { NEAREST_NEIGHBOUR_INTERP = -1,
+		     LINEAR_INTERP = 0,
+		     CUBIC_INTERP = 2 };
 
 class laplacianGrid {
 protected:
@@ -34,46 +37,45 @@ protected:
   //! Hold the level of verbosity
   int verbosity;
   //! Sets up the necessary volume information
-  void initialiseVolumes(integrator type);
+  void initialiseVolumes(integrator type, nc_type gradientDataType);
   //! function pointer for the integration method to use.
   void (laplacianGrid::*integrationStep)(vector<Real> &Xvector,
-			  vector<Real> &Yvector,
-			  vector<Real> &Zvector,
-			  Real dx, Real dy, Real dz, Real h,
+					 vector<Real> &Yvector,
+					 vector<Real> &Zvector,
+					 Real dx, Real dy, Real dz, Real h,
                                          Real &newx,
                                          Real &newy,
                                          Real &newz,
-			  int currentStep);
+					 int currentStep);
   void eulerStep(vector<Real> &Xvector,
-			  vector<Real> &Yvector,
-			  vector<Real> &Zvector,
-			  Real dx, Real dy, Real dz, Real h,
+		 vector<Real> &Yvector,
+		 vector<Real> &Zvector,
+		 Real dx, Real dy, Real dz, Real h,
                  Real &newx,
                  Real &newy,
                  Real &newz,
-			  int currentStep);
+		 int currentStep);
   void fourthOrderRungeKuttaStep(vector<Real> &Xvector,
-			  vector<Real> &Yvector,
-			  vector<Real> &Zvector,
-			  Real dx, Real dy, Real dz, Real h,
+				 vector<Real> &Yvector,
+				 vector<Real> &Zvector,
+				 Real dx, Real dy, Real dz, Real h,
                                  Real &newx,
                                  Real &newy,
                                  Real &newz,
-			  int currentStep);
+				 int currentStep);
   void secondOrderRungeKuttaStep(vector<Real> &Xvector,
-			  vector<Real> &Yvector,
-			  vector<Real> &Zvector,
-			  Real dx, Real dy, Real dz, Real h,
+				 vector<Real> &Yvector,
+				 vector<Real> &Zvector,
+				 Real dx, Real dy, Real dz, Real h,
                                  Real &newx,
                                  Real &newy,
                                  Real &newz,
-			  int currentStep);
-
+				 int currentStep);
 
   void getDerivatives( Real x, Real y, Real z,
 		       Real &dx, Real &dy, Real &dz );
 
-  int evaluate( Real x, Real y, Real z );  
+  Real evaluate( Real x, Real y, Real z, interpolation interpType );  
 public:
   //! constructor from corticalMantle
   //  laplacianGrid(corticalMantle *mantle);
@@ -81,12 +83,16 @@ public:
   laplacianGrid(char* mantleFile,
                 int innerValue,
                 int outerValue,
-		integrator type = EULER);
+		integrator type = EULER,
+		nc_type volumeDataType = NC_SHORT,
+		nc_type gradientDataType = NC_BYTE);
   //! constructor from volume_struct pointer
   laplacianGrid(Volume mantleVolume,
 		int innerValue,
 		int outerValue,
-		integrator type = EULER);
+		integrator type = EULER,
+		nc_type volumeDataType = NC_SHORT,
+		nc_type gradientDataType = NC_BYTE);
   
   //! solve one iteration of laplace's equation
   float solveLaplace();
@@ -105,15 +111,18 @@ public:
   void createStreamline(Real x0, Real y0, Real z0, Real h, 
                         vector<Real> &Xvector,
                         vector<Real> &Yvector,
-                        vector<Real> &Zvector);
+                        vector<Real> &Zvector,
+			interpolation evalType);
 
   Real streamLength(vector<Real> &Xvector,
                     vector<Real> &Yvector,
                     vector<Real> &Zvector);
 
-  void computeAllThickness(Real h);
+  void computeAllThickness(Real h, 
+			   interpolation evalType = NEAREST_NEIGHBOUR_INTERP);
   //! overloaded to only create streamlines at vertices
-  void computeAllThickness(Real h, char* objFile);
+  void computeAllThickness(Real h, char* objFile,
+			   interpolation evalType = NEAREST_NEIGHBOUR_INTERP);
   //  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume
   void output(char* filename, bool isTextFile=false);

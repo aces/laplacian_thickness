@@ -21,6 +21,9 @@ operation mode                   = FROM_SURFACES;
 int  include_white_boundary      = 0;
 int  include_grey_boundary       = 0;
 char *likeFile                   = NULL; 
+nc_type volumeType               = NC_SHORT;
+nc_type gradientsType            = NC_BYTE;
+interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -65,7 +68,46 @@ ArgvInfo argTable[] = {
   { "-2nd_rk", ARGV_CONSTANT, (char *)SECOND_ORDER_RK, (char *)&integration,
     "Use second order Runge-Kutta integration" },
   { "-4th_rk", ARGV_CONSTANT, (char *)FOURTH_ORDER_RK, (char *)&integration,
-    "Use fourth order Runge-Kutta integration\n" },
+    "Use fourth order Runge-Kutta integration" },
+
+  { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
+    "\nData-type control:" },
+  { "-volume-byte", ARGV_CONSTANT, (char *)NC_BYTE, (char *)&volumeType,
+    "Volume is byte format." },
+  { "-volume-short", ARGV_CONSTANT, (char *)NC_SHORT, (char *)&volumeType,
+    "Volume is short integer format." },
+  { "-volume-int", ARGV_CONSTANT, (char *)NC_INT, (char *)&volumeType,
+    "Volume is integer format." },
+  { "-volume-float", ARGV_CONSTANT, (char *)NC_FLOAT, (char *)&volumeType,
+    "Volume is floating point precision." },
+  { "-volume-double", ARGV_CONSTANT, (char *)NC_DOUBLE, (char *)&volumeType,
+    "Volume is double floating point precision." },
+  { "-gradients-byte", ARGV_CONSTANT, (char *)NC_BYTE, (char *)&gradientsType,
+    "Gradients are byte format." },
+  { "-gradients-short", ARGV_CONSTANT, (char *)NC_SHORT, 
+    (char *)&gradientsType,
+    "Gradients are short integer format." },
+  { "-gradients-int", ARGV_CONSTANT, (char *)NC_INT, (char *)&gradientsType,
+    "Gradients are integer format." },
+  { "-gradients-float", ARGV_CONSTANT, (char *)NC_FLOAT, 
+    (char *)&gradientsType,
+    "Gradients are floating point precision." },
+  { "-gradients-double", ARGV_CONSTANT, (char *)NC_DOUBLE, 
+    (char *)&gradientsType,
+    "Gradients are double floating point precision." },
+
+  { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
+    "\nBoundary evaluation control:" },
+  { "-boundary-nearest-neighbour", ARGV_CONSTANT, 
+    (char *)NEAREST_NEIGHBOUR_INTERP,
+    (char *)&boundaryType,
+    "Use nearest neighbour interpolation." },
+  { "-boundary-linear", ARGV_CONSTANT, (char *)LINEAR_INTERP,
+    (char *)&boundaryType,
+    "Use linear interpolation." },
+  { "-boundary-cubic", ARGV_CONSTANT, (char *)CUBIC_INTERP,
+    (char *)&boundaryType,
+    "Use cubic interpolation." },
 
   { NULL, ARGV_END, NULL, NULL, NULL }
 };
@@ -107,7 +149,9 @@ int main(int argc, char* argv[]) {
     grid = new laplacianGrid(input_grid, 
                              inside_value,
                              outside_value,
-                             integration);
+                             integration,
+			     volumeType,
+			     gradientsType);
 
   }
   else if (mode == FROM_GRID) {
@@ -116,7 +160,9 @@ int main(int argc, char* argv[]) {
     grid = new laplacianGrid(grid_file, 
                              inside_value,
                              outside_value,
-                             integration);
+                             integration,
+			     volumeType,
+			     gradientsType);
     cout << "after constructor " << out_filename << endl;
 
   }
@@ -158,12 +204,12 @@ int main(int argc, char* argv[]) {
   cout << "Beginning computation of thicknesses." << endl;
 
   if( objFile == NULL ) {
-    grid->computeAllThickness( hValue );
+    grid->computeAllThickness( hValue, boundaryType );
     grid->output(out_filename);
   }
   else {
     cout << "  Only computing at each vertex" << endl;
-    grid->computeAllThickness( hValue, objFile );
+    grid->computeAllThickness( hValue, objFile, boundaryType );
     grid->output( out_filename, true );
   }
 

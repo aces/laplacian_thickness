@@ -5,7 +5,9 @@
 laplacianGrid::laplacianGrid(char* mantleFile, 
                              int innerValue, 
                              int outerValue,
-                             integrator type) {
+                             integrator integrationType,
+			     nc_type volumeDataType,
+			     nc_type gradientDataType) {
 
   this->innerValue = innerValue;
   this->outerValue = outerValue;
@@ -15,11 +17,11 @@ laplacianGrid::laplacianGrid(char* mantleFile,
 
   // construct the volume from the mantle file, but signed
   this->volume = new mniVolume(mantleFile,
-                               outerValue * -1,
-                               outerValue,
+			       0.0,
+			       0.0,
                                3,
                                XYZdimOrder,
-                               NC_SHORT,
+                               volumeDataType,
                                TRUE,
                                TRUE,
                                NULL);
@@ -28,21 +30,25 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   this->sizes = new int[3];
   this->sizes = this->fixedGrid->getSizes();
   
-  this->initialiseVolumes(type);
+  this->volume->setRealRange(0, 20);
+
+  this->initialiseVolumes(integrationType, gradientDataType);
 }
 
 // constructor from volume_struct
 laplacianGrid::laplacianGrid(Volume mantleVolume,
 			     int innerValue,
 			     int outerValue,
-			     integrator type) {
+			     integrator integrationType,
+			     nc_type volumeDataType,
+			     nc_type gradientDataType) {
   this->innerValue = innerValue;
   this->outerValue = outerValue;
 
   // take the volume_struct pointer as the grid
   this->fixedGrid = new mniLabelVolume(mantleVolume);
   //this->fixedGrid->output("grid.mnc");
-  this->volume = new mniVolume(this->fixedGrid, TRUE, NC_SHORT, TRUE);
+  this->volume = new mniVolume(this->fixedGrid, TRUE, volumeDataType, TRUE);
   this->volume->setRealRange(0, 20);
 
   // initialise the sizes member
@@ -60,16 +66,17 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
     }
   }
 
-  this->initialiseVolumes(type);
+  this->initialiseVolumes(integrationType, gradientDataType);
 }
     
 
-void laplacianGrid::initialiseVolumes(integrator type) {
+void laplacianGrid::initialiseVolumes(integrator integrationType,
+				      nc_type gradientDataType) {
 
   // and construct the gradient volumes - using volume definition copy
-  this->gradientX = new mniVolume(this->volume, TRUE, NC_BYTE, TRUE);
-  this->gradientY = new mniVolume(this->volume, TRUE, NC_BYTE, TRUE);
-  this->gradientZ = new mniVolume(this->volume, TRUE, NC_BYTE, TRUE);
+  this->gradientX = new mniVolume(this->volume, TRUE, gradientDataType, TRUE);
+  this->gradientY = new mniVolume(this->volume, TRUE, gradientDataType, TRUE);
+  this->gradientZ = new mniVolume(this->volume, TRUE, gradientDataType, TRUE);
 
 
   // set their real ranges - safe here since I don't care about
@@ -85,13 +92,19 @@ void laplacianGrid::initialiseVolumes(integrator type) {
   this->verbosity = 0;
   
   // set the function pointer
-  cout << "Using integration type: " << type << endl;
-  if (type == EULER)
+  cout << "Using integration type: ";
+  if (integrationType == EULER) {
     this->integrationStep = &laplacianGrid::eulerStep;
-  else if (type == SECOND_ORDER_RK)
+    cout << "Euler." << endl;
+  }
+  else if (integrationType == SECOND_ORDER_RK) {
     this->integrationStep = &laplacianGrid::secondOrderRungeKuttaStep;
-  else if (type == FOURTH_ORDER_RK)
+    cout << "second order Runge-Kutta." << endl;
+  }
+  else if (integrationType == FOURTH_ORDER_RK) {
     this->integrationStep = &laplacianGrid::fourthOrderRungeKuttaStep;
+    cout << "fourth order Runge-Kutta." << endl;
+  }
 
 }
 
@@ -101,6 +114,12 @@ inline void laplacianGrid::getDerivatives( Real x, Real y, Real z,
   dx = this->gradientX->getInterpolatedVoxel(x,y,z,2);
   dy = this->gradientY->getInterpolatedVoxel(x,y,z,2);
   dz = this->gradientZ->getInterpolatedVoxel(x,y,z,2);
+}
+
+Real laplacianGrid::evaluate( Real x, Real y, Real z, 
+			     interpolation interpType) {
+  //  return this->fixedGrid->getInterpolatedVoxel(x,y,z);
+  return this->fixedGrid->getInterpolatedVoxel(x, y, z, interpType);
 }
 
 // take an integration step using Euler's method
@@ -292,6 +311,8 @@ void laplacianGrid::createGradients() {
 void laplacianGrid::normaliseGradients() {
 	  /* normalise the X gradient at that position like so:
 	   * Nx = dx / [dx^2 + dy^2 / dz^2]^0.5
+	   * NOTE: this makes no sense, but comes from the Jones paper.
+	   * I now normalise by dividing with the vector magnitude.
 	   */
   Real nx, ny, nz, dx, dy, dz;
   //    this->gradientX->output("gradientnnX.mnc");
@@ -327,19 +348,14 @@ void laplacianGrid::normaliseGradients() {
   //    this->gradientX->output("gradientX.mnc");
   //    this->gradientY->output("gradientY.mnc");
   //    this->gradientZ->output("gradientZ.mnc");
-}
-
-int laplacianGrid::evaluate( Real x, Real y, Real z ) {
-  //  return this->fixedGrid->getInterpolatedVoxel(x,y,z);
-  return (int)this->fixedGrid->getVoxel((int)rint(x),(int)rint(y),(int)rint(z));
-}
-    
+}    
 
 // use Eulers method, first towards one then towards the other surface
 void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
                                      vector<Real> &Xvector, 
                                      vector<Real> &Yvector,
-                                     vector<Real> &Zvector) {
+                                     vector<Real> &Zvector,
+				     interpolation evalType) {
 
   int i = 0;
 
@@ -356,7 +372,8 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   vector<Real>::iterator yIt = Yvector.begin();
   vector<Real>::iterator zIt = Zvector.begin();
 
-  int evaluation = this->evaluate(Xvector[i],Yvector[i], Zvector[i]); 
+  Real evaluation = this->evaluate(Xvector[i],Yvector[i], Zvector[i],
+				  evalType); 
 
 
   if (this->verbosity >= 5) {
@@ -411,7 +428,8 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
       return;
     }
     else {
-      evaluation = this->evaluate(Xvector[i], Yvector[i], Zvector[i]);
+      evaluation = this->evaluate(Xvector[i], Yvector[i], Zvector[i],
+				  evalType);
     
       if (this->verbosity >=5 ) {
         cout << "Evaluation function: " << evaluation << endl << endl;
@@ -487,7 +505,8 @@ void laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
       return;
     }
     else {
-      evaluation = this->evaluate(Xvector[0], Yvector[0], Zvector[0]);
+      evaluation = this->evaluate(Xvector[0], Yvector[0], Zvector[0],
+				  evalType);
       //  cout << "after: " << evaluation << endl;
       i++;
 
@@ -529,7 +548,8 @@ Real laplacianGrid::streamLength(vector<Real> &Xvector,
   return length;
 }
 
-void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
+void laplacianGrid::computeAllThickness( Real h, char *objFile,
+					 interpolation evalType ) {
   File_formats 	format;
   int 		point, nPoints, nObjects;
   Point 	*points;
@@ -574,7 +594,7 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
       this->createStreamline(voxel[0],
 			     voxel[1],
 			     voxel[2],
-			     h, xv, yv, zv );
+			     h, xv, yv, zv, evalType );
       length = this->streamLength( xv, yv, zv );
       //    	cout << "Actually computing streamlines." << endl;
     } else {
@@ -589,7 +609,7 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
 }
 	
 
-void laplacianGrid::computeAllThickness(Real h) {
+void laplacianGrid::computeAllThickness(Real h, interpolation evalType) {
 
   //this->volume->setRealRange(0, 100);
 
@@ -602,7 +622,7 @@ void laplacianGrid::computeAllThickness(Real h) {
         if (this->fixedGrid->getVoxel(v1, v2, v3) > this->innerValue && 
             this->fixedGrid->getVoxel(v1, v2, v3) < this->outerValue) {
           vector<Real> xv, yv, zv;
-          this->createStreamline(v1, v2, v3, h, xv, yv, zv);
+          this->createStreamline(v1, v2, v3, h, xv, yv, zv, evalType);
           Real length = this->streamLength(xv, yv, zv);
           this->volume->setVoxel(length ,v1, v2, v3);
         }
@@ -631,9 +651,3 @@ void laplacianGrid::output(char *filename, bool isTextFile) {
     outfile.close();
   }
 }
-
-
-
-    
-
-
