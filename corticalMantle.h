@@ -35,6 +35,8 @@ private:
   STRING clsFile;
   //! The values used in scanning the objects
   int greyValue, whiteValue, overlapValue;
+  //! The verbosity Level
+  int verbosityLevel;
   //! Area fill based on neighbourhood information
   int neighbourFill( int fillValue );
 public:
@@ -61,21 +63,29 @@ public:
     surfaces by scanning the object files to a volume.
 
     Code adapted from David MacDonald's scan_object_to_volume.c
+
+    \bug The maxDistance variable is part of the function calls in bicpl,
+    but I don't think that it actually is ever used anywhere.
   */
   void scanObjectsToVolume(Real maxDistance=1.0,
                            int innerValue=1,
                            int outerValue=2);
-  virtual void setAllVoxels(Real value) { 
-    set_all_volume_label_data(this->volume, (int)value); };
-  
-  /*
-  virtual Real getVoxel(int v1, int v2, int v3, int v4=0, int v5=0);
-  virtual Real getVoxel(int indices[3]);
-  virtual void setVoxel(Real value, int v1, int v2, int v3, 
-                        int v4=0, int v5=0);
-  virtual void setVoxel(Real value, int indices[3]);
-  virtual void output(STRING file);
+  //! Sets all voxels to the same value
+  void setAllVoxels(int value) { 
+    set_all_volume_label_data(this->volume, value); };
+  //! Sets verbosity
+  /*!
+    Sets the amount of info to be spewed out during processing
+
+    \param verbosityLevel The higher the level, the more will be spewed out.
+    - 0 tells it to be quiet. This is the default
+    - 1 prints out a general progress report
+    - >1 prints out a slew of mostly useless info
   */
+  void setVerbosity(int verbosityLevel) {
+    this->verbosityLevel = verbosityLevel; };
+  
+
 };
 
 #endif // __CORTICALMANTLE__
