@@ -1,0 +1,16 @@
+#ifndef __CREATE_LAPLACIAN_GRID__
+#define __CREATE_LAPLACIAN_GRID__
+
+#include  <volume_io/internal_volume_io.h>
+#include  <bicpl.h>
+
+extern Volume create_mantle ( char *input_volume_filename,
+			      char *grey_surface_filename,
+			      char *white_surface_filename,
+			      Real outside_value,
+			      Real inside_value,
+			      int include_white_boundary,
+			      int include_grey_boundary );
+
+#endif
+

@@ -32,6 +32,8 @@ protected:
   progress_struct progressReport;
   //! Hold the level of verbosity
   int verbosity;
+  //! Sets up the necessary volume information
+  void initialiseVolumes();
   
 public:
   //! constructor from corticalMantle
@@ -40,6 +42,10 @@ public:
   laplacianGrid(char* mantleFile,
                 int innerValue,
                 int outerValue);
+  //! constructor from volume_struct pointer
+  laplacianGrid(Volume mantleVolume,
+		int innerValue,
+		int outerValue);
   
   //! solve one iteration of laplace's equation
   float solveLaplace();

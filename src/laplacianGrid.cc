@@ -10,18 +10,40 @@ laplacianGrid::laplacianGrid(char* mantleFile,
 
   // create the grid volume from file
   this->fixedGrid = new mniLabelVolume(mantleFile);
-                                
-  
+
   // construct the volume from the mantle file, but signed
   this->volume = new mniVolume(mantleFile,
                                outerValue * -1,
                                outerValue,
                                3,
-                               ZXYdimOrder,
+                               XYZdimOrder,
                                NC_SHORT,
                                TRUE,
                                TRUE,
                                NULL);
+  
+  this->initialiseVolumes();
+}
+
+// constructor from volume_struct
+laplacianGrid::laplacianGrid(Volume mantleVolume,
+			     int innerValue,
+			     int outerValue) {
+  this->innerValue = innerValue;
+  this->outerValue = outerValue;
+
+  // take the volume_struct pointer as the grid
+  cout << "before" << endl;
+  this->fixedGrid = new mniLabelVolume(mantleVolume);
+  cout << "after" << endl;
+  this->volume = new mniVolume(this->fixedGrid, TRUE, NC_SHORT, TRUE);
+  cout << "end" << endl;
+
+  this->initialiseVolumes();
+}
+    
+
+void laplacianGrid::initialiseVolumes() {
 
   // and construct the gradient volumes - using volume definition copy
   this->gradientX = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
@@ -113,26 +135,26 @@ void laplacianGrid::createGradients() {
 
   // create the gradients using central difference formula,
   // e.g. dx = volume(x+1,y,z) - volume(x-1,y,z,) / 2
-  for (int z=1; z < this->sizes[0]-1; z++) {
-    for (int x=1; x < this->sizes[1]-1; x++) {
-      for (int y=1; y < this->sizes[2]-1; y++) {
-        if (this->fixedGrid->getVoxel(z,x,y) != this->innerValue &&
-            this->fixedGrid->getVoxel(z,x,y) != this->outerValue) {
-          this->gradientZ->setVoxel((this->volume->getVoxel(z+1,x,y) - 
-                                     this->volume->getVoxel(z-1,x,y)) / 2,
-                                    z,x,y);
-          this->gradientX->setVoxel((this->volume->getVoxel(z,x+1,y) - 
-                                     this->volume->getVoxel(z,x-1,y)) / 2,
-                                    z,x,y);
-          this->gradientY->setVoxel((this->volume->getVoxel(z,x,y+1) - 
-                                     this->volume->getVoxel(z,x,y-1)) / 2,
-                                    z,x,y);
+  for (int x=1; x < this->sizes[0]-1; x++) {
+    for (int y=1; y < this->sizes[1]-1; y++) {
+      for (int z=1; z < this->sizes[2]-1; z++) {
+        if (this->fixedGrid->getVoxel(x,y,z) != this->innerValue &&
+            this->fixedGrid->getVoxel(x,y,z) != this->outerValue) {
+          this->gradientX->setVoxel((this->volume->getVoxel(x+1,y,z) - 
+                                     this->volume->getVoxel(x-1,y,z)) / 2,
+                                    x,y,z);
+          this->gradientY->setVoxel((this->volume->getVoxel(x,y+1,z) - 
+                                     this->volume->getVoxel(x,y-1,z)) / 2,
+                                    x,y,z);
+          this->gradientZ->setVoxel((this->volume->getVoxel(x,y,z+1) - 
+                                     this->volume->getVoxel(x,y,z-1)) / 2,
+                                    x,y,z);
           
         }
         else {
-          this->gradientX->setVoxel(0, z,x,y);
-          this->gradientY->setVoxel(0, z,x,y);
-          this->gradientZ->setVoxel(0, z,x,y);
+          this->gradientX->setVoxel(0, x,y,z);
+          this->gradientY->setVoxel(0, x,y,z);
+          this->gradientZ->setVoxel(0, x,y,z);
         }
       }
     }
@@ -145,16 +167,16 @@ void laplacianGrid::normaliseGradients() {
 	   */
   Real nx, ny, nz, dx, dy, dz;
 
-  for (int z=1; z < this->sizes[0]-1; z++) {
-    for (int x=1; x < this->sizes[1]-1; x++) {
-      for (int y=1; y < this->sizes[2]-1; y++) {
+  for (int x=1; x < this->sizes[0]-1; x++) {
+    for (int y=1; y < this->sizes[1]-1; y++) {
+      for (int z=1; z < this->sizes[2]-1; z++) {
 
-        if (this->fixedGrid->getVoxel(z,x,y) != this->innerValue &&
-            this->fixedGrid->getVoxel(z,x,y) != this->outerValue) {
+        if (this->fixedGrid->getVoxel(x,y,z) != this->innerValue &&
+            this->fixedGrid->getVoxel(x,y,z) != this->outerValue) {
   
-          dx = this->gradientX->getVoxel(z,x,y);
-          dy = this->gradientY->getVoxel(z,x,y);
-          dz = this->gradientZ->getVoxel(z,x,y);
+          dx = this->gradientX->getVoxel(x,y,z);
+          dy = this->gradientY->getVoxel(x,y,z);
+          dz = this->gradientZ->getVoxel(x,y,z);
 
           nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
           ny = dy / sqrt( pow(dy,2) + pow(dx,2) / pow(dz,2) );
@@ -163,9 +185,9 @@ void laplacianGrid::normaliseGradients() {
 	  //          cout << "NY: " << ny << endl;
 	  //          cout << "NZ: " << nz << endl;
 	  
-          this->gradientX->setVoxel(nx, z,x,y);
-          this->gradientY->setVoxel(ny, z,x,y);
-          this->gradientZ->setVoxel(nz, z,x,y);
+          this->gradientX->setVoxel(nx, x,y,z);
+          this->gradientY->setVoxel(ny, x,y,z);
+          this->gradientZ->setVoxel(nz, x,y,z);
         }
       }
     }
@@ -178,6 +200,28 @@ void laplacianGrid::normaliseGradients() {
   */
 }
 
+// take an integration step using Euler's method
+inline void eulerStep(vector<Real> &Xvector, 
+			      vector<Real> &Yvector, 
+			      vector<Real> &Zvector,
+			      Real dx, Real dy, Real dz, Real h, 
+			      vector<Real>::iterator XinsertIt,
+			      vector<Real>::iterator YinsertIt,
+			      vector<Real>::iterator ZinsertIt,
+			      vector<Real>::iterator Xpos,
+			      vector<Real>::iterator Ypos,
+			      vector<Real>::iterator Zpos) {
+
+  Xvector.insert( XinsertIt, *Xpos + dx * h );
+  Yvector.insert( YinsertIt, *Ypos + dy * h );
+  Zvector.insert( ZinsertIt, *Zpos + dz * h );
+
+//   Xvector.push_back( *Xpos + dx * h );
+//   Yvector.push_back( *Ypos + dy * h );
+//   Zvector.push_back( *Zpos + dz * h );
+}
+    
+
 // use Eulers method, first towards one then towards the other surface
 void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
                                      vector<Real> &Xvector, 
@@ -186,57 +230,67 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
 
   int i = 0;
 
-  // create vector iterators
-  vector<Real>::iterator xIt, yIt, zIt;
+
 
   //  Xvector[i] = (x0); 
   Xvector.push_back (x0);
   Yvector.push_back (y0); 
   Zvector.push_back (z0); 
 
-  Real evaluation = this->fixedGrid->getVoxel((int)Zvector[i],
-                                              (int)Xvector[i],
-                                              (int)Yvector[i]); 
+  // create vector iterators
+  vector<Real>::iterator xIt = Xvector.begin();
+  vector<Real>::iterator yIt = Yvector.begin();
+  vector<Real>::iterator zIt = Zvector.begin();
+
+  Real evaluation = this->fixedGrid->getVoxel((int) *xIt,
+                                              (int) *yIt,
+                                              (int) *zIt); 
 
 
   if (this->verbosity >= 5) {
     cout << "Start of createStreamline function." << endl;
     cout << "First evaluation: " << evaluation << endl;
-    cout << "Initial vectors (xyz): " << Xvector[0] << " "
-         << Yvector[0] << " " << Zvector[0] << endl;
+    cout << "Initial vectors (xyz): " << *xIt << " "
+         << *yIt << " " << *zIt << endl;
     cout << "Using H of: " << h << endl << endl;
   }
 
   // move towards outside surface first
   while (evaluation < this->outerValue) {
 
-    Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[i],
-                                                        Xvector[i],
-                                                        Yvector[i],
+    Real Xvalue = this->gradientX->getInterpolatedVoxel(*xIt,
+                                                        *yIt,
+                                                        *zIt,
                                                         0);
-    Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[i],
-                                                        Xvector[i],
-                                                        Yvector[i],
+    Real Yvalue = this->gradientY->getInterpolatedVoxel(*xIt,
+                                                        *yIt,
+                                                        *zIt,
                                                         0);
-    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[i],
-                                                        Xvector[i],
-                                                        Yvector[i],
+    Real Zvalue = this->gradientZ->getInterpolatedVoxel(*xIt,
+                                                        *yIt,
+                                                        *zIt,
                                                         0);
 
-    Xvector.push_back (Xvector[i] + Xvalue * h);
-    Yvector.push_back (Yvector[i] + Yvalue * h);
-    Zvector.push_back (Zvector[i] + Zvalue * h);
+    //    Xvector.push_back (Xvector[i] + Xvalue * h);
+    //    Yvector.push_back (Yvector[i] + Yvalue * h);
+    //    Zvector.push_back (Zvector[i] + Zvalue * h);
+    eulerStep(Xvector, Yvector, Zvector, Xvalue, Yvalue, Zvalue, h,
+	      Xvector.end(), Yvector.end(), Zvector.end(), 
+	      xIt, yIt, zIt);
+	      
 
-    if (this->verbosity >= 5) {
-      cout << "Interpolated values: " << Xvalue << " " 
-           << Yvalue << " " << Zvalue << endl;
-      cout << "Values pushed back: " << Xvector[i] + Xvalue * h  << " "
-           << Yvector[i] + Yvalue * h << " "
-           << Zvector[i] + Zvalue * h << endl;
-      cout << "I = " << i << endl << endl;
-    }
-    
+     if (this->verbosity >= 5) {
+       cout << "Interpolated values: " << Xvalue << " " 
+            << Yvalue << " " << Zvalue << endl;
+       cout << "Values pushed back: " << *xIt + Xvalue * h  << " "
+            << *yIt + Yvalue * h << " "
+            << *zIt + Zvalue * h << endl;
+       cout << "I = " << i << endl << endl;
+     }
+
+    cout << i << endl;
     i++;
+    xIt++; yIt++; zIt++;
     // test for Not A Number
     if (Zvector[i] != Zvector[i] || 
         Xvector[i] != Xvector[i] || 
@@ -251,9 +305,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
       return;
     }
     else {
-      evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[i]),
-                                           (int)rint(Xvector[i]),
-                                           (int)rint(Yvector[i]));
+      evaluation = this->fixedGrid->getVoxel((int)rint(Xvector[i]),
+                                           (int)rint(Yvector[i]),
+                                           (int)rint(Zvector[i]));
     
       if (this->verbosity >=5 ) {
         cout << "Evaluation function: " << evaluation << endl << endl;
@@ -280,17 +334,17 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
 
     // test for NaN
     // always look at the beginning of vector
-    Real Xvalue = this->gradientX->getInterpolatedVoxel(Zvector[0],
-                                                        Xvector[0],
+    Real Xvalue = this->gradientX->getInterpolatedVoxel(Xvector[0],
                                                         Yvector[0],
+                                                        Zvector[0],
                                                         0);
-    Real Yvalue = this->gradientY->getInterpolatedVoxel(Zvector[0],
-                                                        Xvector[0],
+    Real Yvalue = this->gradientY->getInterpolatedVoxel(Xvector[0],
                                                         Yvector[0],
+                                                        Zvector[0],
                                                         0);
-    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Zvector[0],
-                                                        Xvector[0],
+    Real Zvalue = this->gradientZ->getInterpolatedVoxel(Xvector[0],
                                                         Yvector[0],
+                                                        Zvector[0],
                                                         0);
     
     // insert at the beginning, using inverse of h
@@ -308,9 +362,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
     }
 
     
-    if (Zvector[0] != Zvector[0] || 
-        Xvector[0] != Xvector[0] || 
-        Yvector[0] != Yvector[0]) {
+    if (Zvector[0] != Xvector[0] || 
+        Xvector[0] != Yvector[0] || 
+        Yvector[0] != Zvector[0]) {
       if (this->verbosity >=2 ) {
         cerr << "WARNING: NaN at xyz: " << x0 << " " << y0 << " " 
              << z0 << endl;
@@ -319,9 +373,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
     }
     else {
 
-      evaluation = this->fixedGrid->getVoxel((int)rint(Zvector[0]),
-                                             (int)rint(Xvector[0]),
-                                             (int)rint(Yvector[0]));
+      evaluation = this->fixedGrid->getVoxel((int)rint(Xvector[0]),
+                                             (int)rint(Yvector[0]),
+                                             (int)rint(Zvector[0]));
       if (Xvector.size() > 50)
         evaluation = this->innerValue;
       
@@ -358,11 +412,11 @@ Real laplacianGrid::streamLength(vector<Real> &Xvector,
 }
 
 void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
-	File_formats 		format;
-	int 						point, nPoints, nObjects;
-	Point 					*points;
+	File_formats 	format;
+	int 		point, nPoints, nObjects;
+	Point 		*points;
 	object_struct 	**objects;
-  Real            *voxel, length;
+	Real            *voxel, length;
 		
 	// open the file
 	if( input_graphics_file( objFile, &format, &nObjects, &objects )
@@ -398,9 +452,9 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
 				       int(rint(voxel[1])), 
 				       int(rint(voxel[2]))) 
 				      > 4000) {
-  	  this->createStreamline( (int)rint(voxel[1]),
+  	  this->createStreamline( (int)rint(voxel[0]),
+	                            (int)rint(voxel[1]),
 	                            (int)rint(voxel[2]),
-	                            (int)rint(voxel[0]),
 	                            h, xv, yv, zv );
     	length = this->streamLength( xv, yv, zv );
 //    	cout << "Actually computing streamlines." << endl;

@@ -2,25 +2,8 @@
  * Code adapted from David MacDonald's surface_mask2
  */
 
-#include  <volume_io/internal_volume_io.h>
-#include  <bicpl.h>
-#include  <ParseArgv.h>
+#include "createLaplacianGrid.h"
 
-/* command-line argument default values */
-int     include_white_boundary     = 0;
-int     include_grey_boundary       = 0;
-
-/* argument parsing table */
-ArgvInfo argTable[] = {
-  { "-include_white_boundary", ARGV_CONSTANT, (char *)1, 
-    (char *) &include_white_boundary,
-    "Force the inclusion of the white-matter surface boundary. [Default: false]" },
-  { "-include_grey_boundary", ARGV_CONSTANT, (char *)1,
-    (char *) &include_grey_boundary,
-    "Force the inclusion of the grey-matter surface boundary. [Default: false]"},
-  
-  { NULL, ARGV_END, NULL, NULL, NULL }
-};
 
 #define  BINTREE_FACTOR   0.1
 
@@ -353,12 +336,19 @@ private  BOOLEAN  get_extrapolated_value(
     return( n_bounds > 0 );
 }
 
-int main ( int argc, char *argv[] )
+Volume create_mantle (   char *input_volume_filename,
+		       char *grey_surface_filename,
+		       char *white_surface_filename,
+		       Real outside_value,
+		       Real inside_value,
+		       int include_white_boundary,
+		       int include_grey_boundary )
 {
-  STRING         input_volume_filename, output_file_name;
-  STRING         grey_surface_filename, white_surface_filename;
-  STRING         history;
-  Real           outside_value, inside_value;
+  /*
+    STRING         input_volume_filename, output_file_name;
+    STRING         grey_surface_filename, white_surface_filename;
+    STRING         history;
+  */
   Volume         grey_volume , white_volume, out_volume;
   int            sizes[MAX_DIMENSIONS];
   int            x,y,z;
@@ -367,26 +357,28 @@ int main ( int argc, char *argv[] )
   File_formats   format;
   int            n_objects, i;
 
-  outside_value = 0;
-  inside_value = 1;
 
   /* create the history string from the input arguments */
-  history = alloc_string(1024); /* should check for overflow */
-  for (i=0; i<argc; i++) {
+  /* should check for overflow */
+  /*
+    history = alloc_string(1024); 
+    for (i=0; i<argc; i++) {
     strcat(history, argv[i]);
     strcat(history, " ");
-  }
+    }
+  */
   
-  if ( ParseArgv( &argc, argv, argTable, 0 ) || ( argc != 5 )) {
+  /*
+    if ( ParseArgv( &argc, argv, argTable, 0 ) || ( argc != 5 )) {
     print_error("Usage: %s in_volume grey_surface.obj white_surface.obj output.mnc \n", argv[0] );
     return( 1 );
-  }
+    }
 
-  input_volume_filename  = argv[1];
-  grey_surface_filename  = argv[2];
-  white_surface_filename = argv[3];
-  output_file_name       = argv[4];
-
+    input_volume_filename  = argv[1];
+    grey_surface_filename  = argv[2];
+    white_surface_filename = argv[3];
+    output_file_name       = argv[4];
+  */
   
 
   if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
@@ -459,10 +451,11 @@ int main ( int argc, char *argv[] )
     scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
   }
 
-  
-  output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
-                out_volume, history, NULL );
-  
+  /*
+    output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
+    out_volume, history, NULL );
+  */
+  return out_volume;
 }
 
 
