@@ -46,6 +46,12 @@ public:
                         vector<Real> &Xvector,
                         vector<Real> &Yvector,
                         vector<Real> &Zvector);
+
+  Real streamLength(vector<Real> &Xvector,
+                    vector<Real> &Yvector,
+                    vector<Real> &Zvector);
+
+  void computeAllThickness();
   //  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume
   void output(char* filename);

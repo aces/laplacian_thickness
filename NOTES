@@ -6,7 +6,14 @@ Unresolved Issues:
 	  outside of the brain to a certain value, all of the areas inside
 	  the brain as another, leaving all voxels identified as being 
 	  part of either surface as part of the mantle.
+
 Features Needed:
 ----------------
 * Convergence criteria which measures change across iterations in 
   determining the mantle and stops once num changed increases.
+
+Bugs and Bad Design:
+--------------------
+* Resource overrun check awkward
+* Doesn't appear to check only mantle values
+* Fails when h set to 0.5

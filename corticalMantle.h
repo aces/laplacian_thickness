@@ -56,7 +56,9 @@ public:
   //! Create laplacian grid
   void initialiseLaplacianGrid( int outerValue,
                                 int innerValue,
-                                int solvableValue );
+                                int solvableValue,
+                                BOOLEAN includeOuter=TRUE,
+                                BOOLEAN includeInenr=TRUE);
   //! Scan objects to volume
   /*!
     Creates an initial volume containing representations of the two 

@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
 
   mantle->setVerbosity(1); // should be made an argument?
   mantle->scanObjectsToVolume();
-  mantle->initialiseLaplacianGrid(outsideValue, insideValue, mantleValue);
+  mantle->initialiseLaplacianGrid(outsideValue, insideValue, mantleValue,
+                                  FALSE, TRUE);
   mantle->output(outputFile);
 }
 

@@ -141,7 +141,9 @@ int corticalMantle::neighbourFill( int fillValue ) {
 
 void corticalMantle::initialiseLaplacianGrid( int outerValue,
                                               int innerValue,
-                                              int mantleValue ) {
+                                              int mantleValue,
+                                              BOOLEAN includeOuter=TRUE,
+                                              BOOLEAN includeInner=TRUE) {
 
   // temporary values to use for filling - to avoid conflicts
   int tmpOuterValue = 5;
@@ -186,9 +188,21 @@ void corticalMantle::initialiseLaplacianGrid( int outerValue,
         int value = this->getVoxel(v1, v2, v3);
         if (value == tmpInnerValue)
           this->setVoxel(innerValue, v1, v2, v3);
-        if (value == tmpOuterValue)
+        else if (value == tmpOuterValue)
           this->setVoxel(outerValue, v1, v2, v3);
-        if (value != tmpInnerValue && value != tmpOuterValue)
+        else if (value == this->greyValue) {
+          if (includeOuter == TRUE)
+            this->setVoxel(mantleValue, v1, v2, v3);
+          else
+            this->setVoxel(outerValue, v1, v2, v3);
+        }
+        else if (value == this->whiteValue) {
+          if (includeInner == TRUE)
+            this->setVoxel(mantleValue, v1, v2, v3);
+          else
+            this->setVoxel(innerValue, v1, v2, v3);
+        }
+        else
           this->setVoxel(mantleValue, v1, v2, v3);
             
       }
