@@ -7,6 +7,7 @@ void main() {
                                   "cls.mnc");
   testMantle->scanObjectsToVolume();
   testMantle->initialiseLaplacianGrid(10, 4, 7);
-  testMantle->outputVolume("testout.mnc");
+  Real t = testMantle->getVoxel(2,2,2);
+  testMantle->output("testout.mnc");
 }
 

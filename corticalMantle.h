@@ -11,6 +11,7 @@ extern "C" {
 #include "volume_io.h"
 #include "bicpl.h"
 }
+#include "bicLabelVolume.h"
 
 // Regular includes
 #include <iostream.h>
@@ -26,7 +27,7 @@ extern "C" {
   be extendable to more general uses as well
 */
 
-class corticalMantle : bicLabelVolume {
+class corticalMantle : public bicLabelVolume {
 private:
   //! Hold the filenames of the two surfaces
   STRING outerSurface, innerSurface;
@@ -48,6 +49,8 @@ public:
                   STRING innerSurfaceFile,
                   STRING outputFile,
                   STRING clsFile);
+
+  virtual ~corticalMantle();
   //! Create laplacian grid
   void initialiseLaplacianGrid( int outerValue,
                                 int innerValue,
@@ -62,6 +65,17 @@ public:
   void scanObjectsToVolume(Real maxDistance=1.0,
                            int innerValue=1,
                            int outerValue=2);
+  virtual void setAllVoxels(Real value) { 
+    set_all_volume_label_data(this->volume, (int)value); };
+  
+  /*
+  virtual Real getVoxel(int v1, int v2, int v3, int v4=0, int v5=0);
+  virtual Real getVoxel(int indices[3]);
+  virtual void setVoxel(Real value, int v1, int v2, int v3, 
+                        int v4=0, int v5=0);
+  virtual void setVoxel(Real value, int indices[3]);
+  virtual void output(STRING file);
+  */
 };
 
 #endif // __CORTICALMANTLE__

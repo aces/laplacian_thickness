@@ -18,6 +18,11 @@ corticalMantle::corticalMantle( STRING outerSurfaceFile,
 
 }
 
+corticalMantle::~corticalMantle() {
+  delete_volume(this->volume);
+  delete this->sizes;
+}
+
 void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
                                          int innerValue=1,
                                          int outerValue=2) {
@@ -48,7 +53,7 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
 
   // scan it to the volume
   for_less(obj, 0, n_objects) {
-    scan_object_to_volume(objectsInner[obj], this->mantle, inner->getVolume(), 
+    scan_object_to_volume(objectsInner[obj], this->volume, inner->getVolume(), 
                           innerValue, maxDistance);
   }
 
@@ -61,7 +66,7 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
 
   // scan it to the volume
   for_less(obj, 0, n_objects) {
-    scan_object_to_volume(objectsOuter[obj], this->mantle, outer->getVolume(), 
+    scan_object_to_volume(objectsOuter[obj], this->volume, outer->getVolume(), 
                           outerValue, maxDistance);
   }
 
@@ -100,7 +105,7 @@ int corticalMantle::neighbourFill( int fillValue ) {
                   value != this->whiteValue &&
                   value != this->overlapValue &&
                   value != fillValue) {
-                this->setValue(fillValue, tmpIndices);
+                this->setVoxel(fillValue, tmpIndices);
                 //cout << "Indices: " << tmpIndices[0] << " " << tmpIndices[1]
                 //   << " " << tmpIndices[2] << " " << value << " " 
                 //   << fillValue << endl;
@@ -121,7 +126,7 @@ void corticalMantle::initialiseLaplacianGrid( int outerValue,
 
   // fill the outer area first, modifying the mantle volume in place
   // set the initial voxel:
-  set_volume_label_data_5d(this->mantle, 5, 5, 5, 0, 0, outerValue);
+  this->setVoxel(outerValue, 5, 5, 5);
   
   // recurse through the volume, setting anything which has a neighbour
   // with the outer value but is not labeled as anything else as outer
@@ -133,7 +138,7 @@ void corticalMantle::initialiseLaplacianGrid( int outerValue,
   }
 
   // now for the inner part
-  set_volume_label_data_5d(this->mantle, 63, 108, 105, 0, 0, innerValue);
+  this->setVoxel(innerValue, 63, 108, 105);
   numValuesChanged = 1;
   while ( numValuesChanged > 0 ) {
     numValuesChanged = this->neighbourFill(innerValue);
@@ -144,10 +149,9 @@ void corticalMantle::initialiseLaplacianGrid( int outerValue,
   for (int v1=0; v1 < this->sizes[0]; v1++) {
     for (int v2=0; v2 < this->sizes[1]; v2++) {
       for (int v3=0; v3 < this->sizes[2]; v3++) {
-        int value = get_volume_label_data_5d(this->mantle, v1, v2, v3, 0, 0);
+        int value = this->getVoxel(v1, v2, v3);
         if (value != innerValue && value != outerValue)
-          set_volume_label_data_5d(this->mantle, v1, v2, v3, 0, 0, 
-                                   mantleValue);
+          this->setVoxel(mantleValue, v1, v2, v3);
             
       }
     }

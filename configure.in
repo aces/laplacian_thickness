@@ -76,8 +76,20 @@ if test "$bicpl_LIBS" = ""; then
     AC_MSG_ERROR([Required library bicpl not found!])
 fi
 
-MNI_INCLUDES="$bicpl_CFLAGS $volumeio_CFLAGS $minc_CFLAGS $netcdf_CFLAGS"
-MNI_LIBS="$bicpl_LIBS $volumeio_LIBS $minc_LIBS $netcdf_LIBS"
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+
+smr_CHECK_LIB(oobicpl,,
+[BIC Programming library 2], int, bicVolume.h,
+[$bicpl_LIBS $volumeio_LIBS $minc_LIBS $netcdf_LIBS -lm],[$bicpl_CFLAGS $netcdf_CFLAGS $minc_CFLAGS $volumeio_CFLAGS])
+if test "$oobicpl_LIBS" = ""; then
+    AC_MSG_ERROR([Required library oobicpl not found!])
+fi
+
+AC_LANG_RESTORE
+
+MNI_INCLUDES=" $oobicpl_CFLAGS $bicpl_CFLAGS $volumeio_CFLAGS $minc_CFLAGS $netcdf_CFLAGS"
+MNI_LIBS="$oobicpl_LIBS $bicpl_LIBS $volumeio_LIBS $minc_LIBS $netcdf_LIBS"
 
 AC_SUBST(MNI_INCLUDES)
 AC_SUBST(MNI_LIBS)
