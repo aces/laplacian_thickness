@@ -1,5 +1,7 @@
 Versions and Tags:
 ------------------
+ver_0-3-1: switched to using NC_SHORT as the internal type to
+           represent the gradient volumes. 
 ver_0-3: Initialisation code more flexible, used in third pipe-run.
 ver_0-2-1: Same as previous version, but actually compiles on IRIX.
 ver_0-2: Second run of lmu pipeline

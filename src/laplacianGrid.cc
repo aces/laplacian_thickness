@@ -24,9 +24,9 @@ laplacianGrid::laplacianGrid(char* mantleFile,
                                NULL);
 
   // and construct the gradient volumes - using volume definition copy
-  this->gradientX = new mniVolume(this->volume, TRUE, NC_FLOAT, TRUE, -1, 1);
-  this->gradientY = new mniVolume(this->volume, TRUE, NC_FLOAT, TRUE, -1, 1);
-  this->gradientZ = new mniVolume(this->volume, TRUE, NC_FLOAT, TRUE, -1, 1);
+  this->gradientX = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
+  this->gradientY = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
+  this->gradientZ = new mniVolume(this->volume, TRUE, NC_SHORT, TRUE, -1, 1);
 
 
   // set their real ranges - safe here since I don't care about
