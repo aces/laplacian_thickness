@@ -61,7 +61,7 @@ inline void laplacianGrid::secondOrderRungeKuttaStep(
   
 
 // take an integration step using a fourth order Runge-Kutta Model
-inline void laplacianGrid::rungeKuttaStep(vector<Real> &Xvector, 
+inline void laplacianGrid::fourthOrderRungeKuttaStep(vector<Real> &Xvector, 
 					  vector<Real> &Yvector, 
 					  vector<Real> &Zvector,
 					  Real dx, Real dy, Real dz, Real h, 
@@ -69,9 +69,9 @@ inline void laplacianGrid::rungeKuttaStep(vector<Real> &Xvector,
 					  vector<Real>::iterator YinsertIt,
 					  vector<Real>::iterator ZinsertIt,
 					  int currentIndex) {
+
+  Real ddx[3], ddy[3], ddz[3];
   Real kx, ky, kz;
-  Real xx, xy, xz;
-  Real mx, my, mz;
 
   Real hh = h*0.5;
 
@@ -80,30 +80,29 @@ inline void laplacianGrid::rungeKuttaStep(vector<Real> &Xvector,
   ky = Yvector[currentIndex] + dy * hh;
   kz = Zvector[currentIndex] + dz * hh;
 
-  // re-evaluate derivatives based on half of previous step
-  this->getDerivatives(kx, ky, kz, xx, xy, xz);
+  // second step
+  this->getDerivatives(kx, ky, kz, ddx[0], ddy[0], ddz[0]);
 
-  // take second step
-  kx = Xvector[currentIndex] + xx * hh;
-  ky = Yvector[currentIndex] + xy * hh;
-  kz = Zvector[currentIndex] + xz * hh;
-
-  this->getDerivatives(kx, ky, kz, mx, my, mz);
+  kx = Xvector[currentIndex] + ddx[0] * hh;
+  ky = Yvector[currentIndex] + ddy[0] * hh;
+  kz = Zvector[currentIndex] + ddz[0] * hh;
   
   // third step
-  kx = Xvector[currentIndex] + mx * h;
-  mx += xx;
-  ky = Yvector[currentIndex] + my * h;
-  my += xy;
-  kz = Zvector[currentIndex] + mz * h;
-  mz += xz;
-
-//   this->getDerivatives(currentIndex + h
-
+  this->getDerivatives(kx, ky, kz, ddx[1], ddy[1], ddz[1]);
   
-//   Xvector.insert( XinsertIt, kx[0]/6 + kx[1]/3 + kx[2]/3 + kx[3]/6);
-//   Yvector.insert( YinsertIt, ky[0]/6 + ky[1]/3 + ky[2]/3 + ky[3]/6);
-//   Zvector.insert( ZinsertIt, kz[0]/6 + kz[1]/3 + kz[2]/3 + kz[3]/6);
+  // fourth step
+  kx = Xvector[currentIndex] + ddx[1] * h;
+  ky = Yvector[currentIndex] + ddy[1] * h;
+  kz = Zvector[currentIndex] + ddz[1] * h;
+
+  this->getDerivatives(kx, ky, kz, ddx[2], ddy[2], ddz[2]);
+  
+  Xvector.insert( XinsertIt, Xvector[currentIndex] + 
+		  (dx / 6) + (ddx[0] / 3) + (ddx[1]) / 3 + (ddx[2] / 6) );
+  Yvector.insert( YinsertIt, Yvector[currentIndex] +
+		  (dy / 6) + (ddy[0] / 3) + (ddy[1]) / 3 + (ddy[2] / 6) );
+  Zvector.insert( ZinsertIt, Zvector[currentIndex] + 
+		  (dz / 6) + (ddz[0] / 3) + (ddz[1]) / 3 + (ddz[2] / 6) );
 
 }
 
@@ -111,7 +110,8 @@ inline void laplacianGrid::rungeKuttaStep(vector<Real> &Xvector,
 // constructor from file
 laplacianGrid::laplacianGrid(char* mantleFile, 
                              int innerValue, 
-                             int outerValue) {
+                             int outerValue,
+			     integrator type) {
 
   this->innerValue = innerValue;
   this->outerValue = outerValue;
@@ -130,13 +130,14 @@ laplacianGrid::laplacianGrid(char* mantleFile,
                                TRUE,
                                NULL);
   
-  this->initialiseVolumes();
+  this->initialiseVolumes(type);
 }
 
 // constructor from volume_struct
 laplacianGrid::laplacianGrid(Volume mantleVolume,
 			     int innerValue,
-			     int outerValue) {
+			     int outerValue,
+			     integrator type) {
   this->innerValue = innerValue;
   this->outerValue = outerValue;
 
@@ -144,11 +145,11 @@ laplacianGrid::laplacianGrid(Volume mantleVolume,
   this->fixedGrid = new mniVolume(mantleVolume);
   this->volume = new mniVolume(this->fixedGrid, FALSE, NC_SHORT, TRUE);
 
-  this->initialiseVolumes();
+  this->initialiseVolumes(type);
 }
     
 
-void laplacianGrid::initialiseVolumes() {
+void laplacianGrid::initialiseVolumes(integrator type) {
 
   // and construct the gradient volumes - using volume definition copy
   this->gradientX = new mniVolume(this->volume, FALSE, NC_SHORT, TRUE, -1, 1);
@@ -172,7 +173,13 @@ void laplacianGrid::initialiseVolumes() {
   this->verbosity = 0;
   
   // set the function pointer
-  this->integrationStep = &laplacianGrid::secondOrderRungeKuttaStep;
+  cout << "Using integration type: " << type << endl;
+  if (type == EULER)
+    this->integrationStep = &laplacianGrid::eulerStep;
+  else if (type == SECOND_ORDER_RK)
+    this->integrationStep = &laplacianGrid::secondOrderRungeKuttaStep;
+  else if (type == FOURTH_ORDER_RK)
+    this->integrationStep = &laplacianGrid::fourthOrderRungeKuttaStep;
 
 }
 
@@ -318,8 +325,6 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
 
   int i = 0;
 
-
-
   //  Xvector[i] = (x0); 
   Xvector.push_back (x0);
   Yvector.push_back (y0); 
@@ -330,9 +335,9 @@ void laplacianGrid::createStreamline(int x0, int y0, int z0, Real h,
   vector<Real>::iterator yIt = Yvector.begin();
   vector<Real>::iterator zIt = Zvector.begin();
 
-  Real evaluation = this->fixedGrid->getVoxel((int) Xvector[i],
-                                              (int) Yvector[i],
-                                              (int) Zvector[i]); 
+  Real evaluation = this->fixedGrid->getInterpolatedVoxel(Xvector[i],
+							  Yvector[i],
+							  Zvector[i]); 
 
 
   if (this->verbosity >= 5) {
@@ -580,18 +585,13 @@ void laplacianGrid::computeAllThickness(Real h) {
   for (int v1=1; v1 < this->sizes[0]-1; v1++) {
     for (int v2=1; v2 < this->sizes[1]-1; v2++) {
       for (int v3=1; v3 < this->sizes[2]-1; v3++) {
-        //        if (this->fixedGrid->getVoxel(v1, v2, v3) != this->innerValue &&
-        //            this->fixedGrid->getVoxel(v1, v2, v3) != this->outerValue) {
-        if (this->fixedGrid->getVoxel(v1, v2, v3) < 6000 && 
-            this->fixedGrid->getVoxel(v1, v2, v3) > 4000) {
-          //          cout << v1 << " " << v2 << " " << v3 << endl;
+        if (this->fixedGrid->getVoxel(v1, v2, v3) > this->innerValue && 
+            this->fixedGrid->getVoxel(v1, v2, v3) < this->outerValue) {
+	  //	  cout << v1 << " " << v2 << " " << v3 << endl;
           vector<Real> xv, yv, zv;
-          this->createStreamline(v2, v3, v1, h, xv, yv, zv);
+          this->createStreamline(v1, v2, v3, h, xv, yv, zv);
           Real length = this->streamLength(xv, yv, zv);
           this->volume->setVoxel(length ,v1, v2, v3);
-          //          cout << v1 << " " << v2 << " " << v3 << " " << length 
-          //               << " " << xv.size() << endl;
-
         }
         else {
           this->volume->setVoxel(0, v1, v2, v3);
@@ -602,10 +602,6 @@ void laplacianGrid::computeAllThickness(Real h) {
   }
   terminate_progress_report(&this->progressReport);
 }
-
-        
-        
-  
 
 void laplacianGrid::output(char *filename, bool isTextFile) {
 
@@ -623,21 +619,6 @@ void laplacianGrid::output(char *filename, bool isTextFile) {
   }
 }
 
-
-//     if (open_file( filename, WRITE_FILE, ASCII_FORMAT, &this->outputVertexFile ) != OK ) {
-//       cerr << "ERROR: could not open output file " << filename << endl;
-//       exit(1);
-//   	}
-
-//    	for ( int i=0; i < this->numVertices; i++ ) {
-//        // output the result to file
-//        if( output_real( this->outputVertexFile, this->thicknessPerVertex[i] ) != OK ||
-//            output_newline( this->outputVertexFile ) != OK ) {
-//          cerr << "ERROR: Problems writing thicknesses to file" << endl;
-//        }
-//     }
-//     close_file(this->outputVertexFile);
-//   }
 
 
     

@@ -6,9 +6,10 @@
 #include <vector>
 #include <math.h>
 #include <fstream>
-//#include "corticalMantle.h"
 
 using namespace std;
+
+enum integrator { EULER, SECOND_ORDER_RK, FOURTH_ORDER_RK };
 
 class laplacianGrid {
 protected:
@@ -33,7 +34,7 @@ protected:
   //! Hold the level of verbosity
   int verbosity;
   //! Sets up the necessary volume information
-  void initialiseVolumes();
+  void initialiseVolumes(integrator type);
   //! function pointer for the integration method to use.
   void (laplacianGrid::*integrationStep)(vector<Real> &Xvector,
 			  vector<Real> &Yvector,
@@ -51,7 +52,7 @@ protected:
 			  vector<Real>::iterator YinsertIt,
 			  vector<Real>::iterator ZinsertIt,
 			  int currentStep);
-  void rungeKuttaStep(vector<Real> &Xvector,
+  void fourthOrderRungeKuttaStep(vector<Real> &Xvector,
 			  vector<Real> &Yvector,
 			  vector<Real> &Zvector,
 			  Real dx, Real dy, Real dz, Real h,
@@ -79,11 +80,13 @@ public:
   //! constructor from file
   laplacianGrid(char* mantleFile,
                 int innerValue,
-                int outerValue);
+                int outerValue,
+		integrator type = EULER);
   //! constructor from volume_struct pointer
   laplacianGrid(Volume mantleVolume,
 		int innerValue,
-		int outerValue);
+		int outerValue,
+		integrator type = EULER);
   
   //! solve one iteration of laplace's equation
   float solveLaplace();

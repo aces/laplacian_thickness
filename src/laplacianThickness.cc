@@ -14,6 +14,7 @@ int  maxIterations               = 300;
 int  vValue                      = 1;
 char *objFile                    = NULL;
 int  potentialOnly               = 0;
+integrator integration           = EULER;
 int  include_white_boundary      = 0;
 int  include_grey_boundary       = 0;
 char *likeFile                   = NULL; 
@@ -21,18 +22,18 @@ char *likeFile                   = NULL;
 // argument parsing table
 ArgvInfo argTable[] = {
   { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
-    "Cortical Mantle Options:" },
+    "\nCortical Mantle Options:" },
   { "-include_white_boundary", ARGV_CONSTANT, (char *)1, 
     (char *) &include_white_boundary,
-    "Force the inclusion of the white-matter surface boundary. [Default: false]" },
+    "Force the inclusion of the white-matter surface  \n\t\t\t\tboundary. [Default: false]" },
   { "-include_grey_boundary", ARGV_CONSTANT, (char *)1,
     (char *) &include_grey_boundary,
-    "Force the inclusion of the grey-matter surface boundary. [Default: false]"},
+    "Force the inclusion of the grey-matter surface  \n\t\t\t\tboundary. [Default: false]"},
   { "-like", ARGV_STRING, (char *)0, (char *) &likeFile,
     "MINC file whose shape the cortical mantle will take" },
 
   { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
-    "Laplacian Equation solving options:" },
+    "\nLaplacian Equation solving options:" },
   { "-h", ARGV_FLOAT, (char *)0, (char *) &hValue,
     "H value to use for Eulerian integration" },
   { "-v", ARGV_INT, (char *)0, (char *) &vValue,
@@ -42,9 +43,18 @@ ArgvInfo argTable[] = {
   { "-max_iterations", ARGV_INT, (char *)0, (char *) &maxIterations,
     "Maximum number of iterations for relaxation." },
   { "-object_eval", ARGV_STRING, (char *)0, (char *) &objFile,
-    "Evaluate thickness only at vertices of the obj file. Output text rather than minc." },
+    "Evaluate thickness only at vertices of the obj file. \n\t\t\t\tOutput text rather than minc." },
   { "-potential_only", ARGV_CONSTANT, (char *)1, (char *) &potentialOnly,
-    "Output only the potential field and stop (Default: False)" },
+    "Output only the potential field and stop." },
+
+  { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
+    "\nIntegration Options:" },
+  { "-euler", ARGV_CONSTANT, (char *)EULER, (char *)&integration,
+    "Use Euler method for integration (Default)" },
+  { "-2nd_rk", ARGV_CONSTANT, (char *)SECOND_ORDER_RK, (char *)&integration,
+    "Use second order Runge-Kutta integration" },
+  { "-4th_rk", ARGV_CONSTANT, (char *)FOURTH_ORDER_RK, (char *)&integration,
+    "Use fourth order Runge-Kutta integration\n" },
 
   { NULL, ARGV_END, NULL, NULL, NULL }
 };
@@ -54,9 +64,9 @@ int main(int argc, char* argv[]) {
   vector<Real>::iterator xit, yit, zit;
 
   if ( ParseArgv(&argc, argv, argTable, 0) || (argc != 4 )) {
-    cerr << "Usage: " << argv[0] << " [options] -like sample.mnc grey_surface.obj white_surface.obj output_thickness.mnc" << endl;
-    cerr << "or" << endl;
-    cerr << "Usage: " << argv[0] << " [options] -like sample.mnc -object_eval surface.obj grey_surface.obj white_surface.obj output_thickness.txt" << endl;
+    cerr << endl << "Usage: " << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
+    cerr << "\tor" << endl;
+    cerr << "Usage: " << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
 
     return (1);
   }
@@ -78,7 +88,8 @@ int main(int argc, char* argv[]) {
 
   laplacianGrid *grid = new laplacianGrid(input_grid, 
 					  inside_value,
-					  outside_value);
+					  outside_value,
+					  integration);
 
   grid->setVerbosity( vValue );
 

@@ -1,5 +1,9 @@
 2002-05-06	Jason Lerch	<jason@bic.mni.mcgill.ca>
 
+	* fourth order Runge-Kutta method (hopefully correctly) implemented.
+
+2002-05-06	Jason Lerch	<jason@bic.mni.mcgill.ca>
+
 	* using function pointers for the integration step. Can now handle
 	a second order runge-kutta model. A fourth order runge-kutta is
 	still in the works, as are real options in order to let the user
