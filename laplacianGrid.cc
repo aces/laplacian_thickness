@@ -86,66 +86,98 @@ void laplacianGrid::relaxEquation(float convergenceCriteria,
 
 // create a gradient volume in each of the cardinal directions
 void laplacianGrid::createGradients() {
-  Real nx, ny, nz, dx, dy, dz;
-
 
   // create the gradients using central difference formula,
   // e.g. dx = volume(x+1,y,z) - volume(x-1,y,z,) / 2
   for (int z=1; z < this->sizes[0]-1; z++) {
     for (int x=1; x < this->sizes[1]-1; x++) {
       for (int y=1; y < this->sizes[2]-1; y++) {
-	if (this->fixedGrid->getVoxel(z,x,y) != this->innerValue &&
-	    this->fixedGrid->getVoxel(z,x,y) != this->outerValue) {
-	  this->gradientZ->setVoxel((this->volume->getVoxel(z+1,x,y) - 
-				     this->volume->getVoxel(z-1,x,y)) / 2,
-				    z,x,y);
-	  this->gradientX->setVoxel((this->volume->getVoxel(z,x+1,y) - 
-				     this->volume->getVoxel(z,x-1,y)) / 2,
-				    z,x,y);
-	  this->gradientY->setVoxel((this->volume->getVoxel(z,x,y+1) - 
-				     this->volume->getVoxel(z,x,y-1)) / 2,
-				    z,x,y);
-	  
-	  /* normalise the X gradient at that position like so:
-	   * Nx = dx / [dx^2 + dy^2 / dz^2]^0.5
-	   */
-	  dx = this->gradientX->getVoxel(z,x,y);
-	  dy = this->gradientY->getVoxel(z,x,y);
-	  dz = this->gradientZ->getVoxel(z,x,y);
-
-	  nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
-	  ny = dy / sqrt( pow(dy,2) + pow(dx,2) / pow(dz,2) );
-	  nz = dz / sqrt( pow(dz,2) + pow(dx,2) / pow(dy,2) );
-	  cout << "NX: " << nx << endl;
-	  cout << "NY: " << ny << endl;
-	  cout << "NZ: " << nz << endl;
-	  
-	  /*
-	    value = this->gradientX->getVoxel(z,x,y) / 
-	    sqrt(((pow(this->gradientX->getVoxel(z,x,y),2)) + 
-	    pow(this->gradientY->getVoxel(z,x,y),2)) / 
-	    (pow(this->gradientZ->getVoxel(z,x,y),2)));
-	  */
-	  this->gradientX->setVoxel(nx, z,x,y);
-	  this->gradientY->setVoxel(ny, z,x,y);
-	  this->gradientZ->setVoxel(nz, z,x,y);
-	}
-	else {
-	  this->gradientX->setVoxel(0, z,x,y);
-	  this->gradientY->setVoxel(0, z,x,y);
-	  this->gradientZ->setVoxel(0, z,x,y);
-	}
+        if (this->fixedGrid->getVoxel(z,x,y) != this->innerValue &&
+            this->fixedGrid->getVoxel(z,x,y) != this->outerValue) {
+          this->gradientZ->setVoxel((this->volume->getVoxel(z+1,x,y) - 
+                                     this->volume->getVoxel(z-1,x,y)) / 2,
+                                    z,x,y);
+          this->gradientX->setVoxel((this->volume->getVoxel(z,x+1,y) - 
+                                     this->volume->getVoxel(z,x-1,y)) / 2,
+                                    z,x,y);
+          this->gradientY->setVoxel((this->volume->getVoxel(z,x,y+1) - 
+                                     this->volume->getVoxel(z,x,y-1)) / 2,
+                                    z,x,y);
+          
+        }
+        else {
+          this->gradientX->setVoxel(0, z,x,y);
+          this->gradientY->setVoxel(0, z,x,y);
+          this->gradientZ->setVoxel(0, z,x,y);
+        }
       }
     }
   }
-    this->gradientX->output("gradientX.mnc");
-    this->gradientY->output("gradientY.mnc");
-    this->gradientZ->output("gradientZ.mnc");
+}
+
+void laplacianGrid::normaliseGradients() {
+	  /* normalise the X gradient at that position like so:
+	   * Nx = dx / [dx^2 + dy^2 / dz^2]^0.5
+	   */
+  Real nx, ny, nz, dx, dy, dz;
+
+  for (int z=1; z < this->sizes[0]-1; z++) {
+    for (int x=1; x < this->sizes[1]-1; x++) {
+      for (int y=1; y < this->sizes[2]-1; y++) {
+
+        if (this->fixedGrid->getVoxel(z,x,y) != this->innerValue &&
+            this->fixedGrid->getVoxel(z,x,y) != this->outerValue) {
+  
+          dx = this->gradientX->getVoxel(z,x,y);
+          dy = this->gradientY->getVoxel(z,x,y);
+          dz = this->gradientZ->getVoxel(z,x,y);
+
+          nx = dx / sqrt( pow(dx,2) + pow(dy,2) / pow(dz,2) );
+          ny = dy / sqrt( pow(dy,2) + pow(dx,2) / pow(dz,2) );
+          nz = dz / sqrt( pow(dz,2) + pow(dx,2) / pow(dy,2) );
+          cout << "NX: " << nx << endl;
+          cout << "NY: " << ny << endl;
+          cout << "NZ: " << nz << endl;
+	  
+          this->gradientX->setVoxel(nx, z,x,y);
+          this->gradientY->setVoxel(ny, z,x,y);
+          this->gradientZ->setVoxel(nz, z,x,y);
+        }
+      }
+    }
+  }
+  this->gradientX->output("gradientX.mnc");
+  this->gradientY->output("gradientY.mnc");
+  this->gradientZ->output("gradientZ.mnc");
 }
 
 // use Eulers method, first towards one then towards the other surface
-Real laplacianGrid::createStreamline(int x0, int y0, int z0, int h) {
-  // not the most space efficient, I know,
+void laplacianGrid::createStreamline(int x0, int y0, int z0, int h,
+                                     vector<Real> &Xvector, 
+                                     vector<Real> &Yvector,
+                                     vector<Real> &Zvector) {
+  // initialise a new vector
+  Xvector.push_back(x0); 
+  Yvector.push_back(y0); 
+  Zvector.push_back(z0); 
+
+  int i = 0;
+
+  // move towards outside surface first
+  while (this->gradientX->getVoxel((int)Zvector[i],
+                                  (int)Yvector[i],
+                                  (int)Xvector[i]) 
+         != this->outerValue) {
+
+    Xvector.push_back(Xvector[i]
+                      + this->gradientX->getInterpolatedVoxel(Zvector[i],
+                                                              Yvector[i],
+                                                              Xvector[i])
+                      * h);
+    i++;
+  }
+}
+  
   
 				     
 

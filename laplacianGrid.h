@@ -3,6 +3,8 @@
 
 #include <mniLabelVolume.h>
 #include <mniVolume.h>
+#include <vector>
+
 #include "corticalMantle.h"
 
 class laplacianGrid {
@@ -30,16 +32,24 @@ public:
   float solveLaplace();
   //! relax the equation
   void relaxEquation(float convergenceCriteria, int maxIterations);
-  //! create a normalised gradient volume in each direction
+  //! create a gradient volume in each direction
   void createGradients();
-  //! integrate gradients using using Euler's formula
+  //! normalise the gradient volumes
+  void normaliseGradients();
+  //! integrate gradients using Euler's formula
   void createStreamlines();
   //! normalise according to units to get a thickness metric
   void createThicknessMetric();
   //! create a streamline at given voxel
-  Real createStreamline(int x0, int y0, int z0, int h);
+  void testFunction(vector<Real> &t);
+  void createStreamline(int x0, int y0, int z0, int h, 
+                        vector<Real> &Xvector,
+                        vector<Real> &Yvector,
+                        vector<Real> &Zvector);
+  //  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume
   void output(char* filename);
+
 
 
 };
