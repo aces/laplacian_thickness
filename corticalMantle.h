@@ -26,22 +26,14 @@ extern "C" {
   be extendable to more general uses as well
 */
 
-class corticalMantle {
+class corticalMantle : bicLabelVolume {
 private:
-  //! Holds the file to use for output
-  STRING outputFile;
   //! Hold the filenames of the two surfaces
   STRING outerSurface, innerSurface;
   //! Holds the file after which to model the output
   STRING clsFile;
-  //! Holds the volume to work with
-  Volume mantle;
   //! The values used in scanning the objects
   int greyValue, whiteValue, overlapValue;
-  //! The dimension names
-  char* dimNames[];
-  //! Dimension sizes
-  int sizes[MAX_DIMENSIONS];
   //! Area fill based on neighbourhood information
   int neighbourFill( int fillValue );
 public:
@@ -59,7 +51,7 @@ public:
   //! Create laplacian grid
   void initialiseLaplacianGrid( int outerValue,
                                 int innerValue,
-                                int mantleValue );
+                                int solvableValue );
   //! Scan objects to volume
   /*!
     Creates an initial volume containing representations of the two 
@@ -70,16 +62,6 @@ public:
   void scanObjectsToVolume(Real maxDistance=1.0,
                            int innerValue=1,
                            int outerValue=2);
-  //! Outputs the volume
-  /*!
-    Outputs the mantle as a label volume.
-
-    \param filename The filename to write to, defaults to the 
-                    classes outputFile.
-    \bugs Cropping threshold forced to 10
-  */
-  void outputVolume(STRING filename);
-  void outputVolume();
 };
 
 #endif // __CORTICALMANTLE__

@@ -8,27 +8,13 @@
 corticalMantle::corticalMantle( STRING outerSurfaceFile,
                                 STRING innerSurfaceFile,
                                 STRING outputFile,
-                                STRING clsFile ) {
+                                STRING clsFile ) 
+  : bicLabelVolume(clsFile, 1, 3, ZXYdimOrder, NC_LONG, NULL) {
 
-  this->outputFile = outputFile;
+  this->filename = outputFile;
   this->clsFile = clsFile;
   this->innerSurface = innerSurfaceFile;
   this->outerSurface = outerSurfaceFile;
-
-  // NOTE: this should be made more flexible!
-  this->dimNames[0] = MIzspace;
-  this->dimNames[1] = MIxspace;
-  this->dimNames[2] = MIyspace;
-
-  // get the header information from the cls file - used to get
-  // the dimensions for the scanning of the objects
-  if (input_volume_header_only(this->clsFile, 3, this->dimNames,
-                               &this->mantle, NULL) != OK) {
-    cerr << "ERROR: could not open " << this->clsFile << endl;
-    exit(1);
-  }
-  this->mantle = create_label_volume(this->mantle, NC_BYTE);
-  get_volume_sizes(this->mantle, this->sizes);
 
 }
 
@@ -36,7 +22,7 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
                                          int innerValue=1,
                                          int outerValue=2) {
 
-  Volume          inner, outer;
+  bicLabelVolume  *inner, *outer;
   File_formats    format;
   int             obj, n_objects;
   object_struct   **objectsInner, **objectsOuter;
@@ -48,10 +34,10 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
   this->overlapValue = outerValue + innerValue;
 
   // create the two label volumes
-  inner = create_label_volume(this->mantle, NC_BYTE);
-  outer = create_label_volume(this->mantle, NC_BYTE);
-  set_all_volume_label_data(inner, 0);
-  set_all_volume_label_data(outer, 0);
+  inner = new bicLabelVolume(this);
+  outer = new bicLabelVolume(this);
+  inner->setAllVoxels(0);
+  outer->setAllVoxels(0);
 
   // open the inner surface
   if (input_graphics_file(this->innerSurface, &format, &n_objects,
@@ -62,7 +48,7 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
 
   // scan it to the volume
   for_less(obj, 0, n_objects) {
-    scan_object_to_volume(objectsInner[obj], this->mantle, inner, 
+    scan_object_to_volume(objectsInner[obj], this->mantle, inner->getVolume(), 
                           innerValue, maxDistance);
   }
 
@@ -75,7 +61,7 @@ void corticalMantle::scanObjectsToVolume(Real maxDistance=1.0,
 
   // scan it to the volume
   for_less(obj, 0, n_objects) {
-    scan_object_to_volume(objectsOuter[obj], this->mantle, outer, 
+    scan_object_to_volume(objectsOuter[obj], this->mantle, outer->getVolume(), 
                           outerValue, maxDistance);
   }
 
