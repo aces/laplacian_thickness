@@ -22,6 +22,10 @@
 #include <vector>
 #include <iostream>
 
+extern "C" {
+#include "ParseArgv.h"
+}
+
 using namespace std;
 
 struct pointStats_struct {
@@ -68,7 +72,10 @@ Real *loadVertexFile( int &numVertices, char *filename ) {
 
 
 
-void findFileOutliers( Real *vertexValues, int nPoints, ofstream &outstream ) {
+void findFileOutliers( Real *vertexValues, int nPoints, 
+		       bool replaceNaN=true,
+		       bool replaceOutliers=true,
+		       float outlierStdMultiplier=3.0) {
   pointStats *stats = new pointStats;
   Real       sumTotal;
   int        numNaN, numUsed, numValid, numInvalid;
@@ -105,17 +112,25 @@ void findFileOutliers( Real *vertexValues, int nPoints, ofstream &outstream ) {
   }
   stats->std = sqrt( sumTotal / numUsed );
 
-  // now do the replacement (simulate for now
+  // now do the replacement NOTE: instead of doing this globally it
+  // ought to work based on neighbourhood information ...
   numInvalid = 1;
   for (int i=0; i < nPoints;  ++i) {
-    // replace if NaN
-    if ( vertexValues[i] != vertexValues[i] 
-	 || fabs( vertexValues[i] - stats->mean ) > ( stats->std * 3 ) ) {
-      outstream << stats->mean << endl;
+    // check if NaN
+    if ( vertexValues[i] != vertexValues[i] ) {
       numInvalid++;
+      if ( replaceNaN==true ) {
+	vertexValues[i] = stats->mean;
+      }
     }
-    else {
-      outstream << vertexValues[i] << endl;
+    // check if value is an outlier, defined as the standard
+    // deviation times supplied constant
+    else if ( fabs( vertexValues[i] - stats->mean ) > 
+	      ( stats->std * outlierStdMultiplier ) ) {
+      numInvalid++;
+      if ( replaceOutliers==true ) {
+	vertexValues[i] = stats->mean;
+      }
     }
   }
 
@@ -128,6 +143,12 @@ void findFileOutliers( Real *vertexValues, int nPoints, ofstream &outstream ) {
        << "  std      = " << stats->std << endl;
 }
 
+void writeVerticesToFile( char *filename, Real *vertexValues, int nPoints ) {
+  ofstream outstream( filename, ios::out  );
+  for ( int i=0; i < nPoints; ++i ) {
+    outstream << vertexValues[i] << endl;
+  }
+}
 
 // void findNeighbouringOutliers( const polygons_struct &p, Real *vertexValues ) {
 
@@ -172,8 +193,40 @@ void findFileOutliers( Real *vertexValues, int nPoints, ofstream &outstream ) {
 
 
 int main( int argc, char *argv[] ) {
+  bool replaceNaNs         = false;
+  bool replaceOutliers     = false;
+  Real stdConstant        = 3.0;
+
+  ArgvInfo argTable[] = {
+    { "-replace_nans", ARGV_CONSTANT, (char *) true, (char *) &replaceNaNs,
+      "Replace NaNs with mean." },
+    { "-replace_outliers", ARGV_CONSTANT, (char *) true,
+      (char *) &replaceOutliers,
+      "Replace outliers with mean." },
+    { "-std_constant", ARGV_FLOAT, (char *)0, (char *) &stdConstant,
+      "Define outlier as this constant times the standard deviation" },
+    
+    { NULL, ARGV_END, NULL, NULL, NULL }
+  };
+
+  if ( ParseArgv( &argc, argv, argTable, 0 ) || (! argc > 1 ) ) {
+    cerr << "Usage: " << argv[0] << " [options] input.txt [output.txt]"
+	 << endl;
+    return(1);
+  }
+
+
+
   int numVertices;
   Real *vertexArray = loadVertexFile( numVertices, argv[1] );
-  ofstream outstream( argv[2], ios::out  );
-  findFileOutliers( vertexArray, numVertices, outstream );
+  findFileOutliers( vertexArray, numVertices, replaceNaNs, replaceOutliers,
+		    stdConstant);
+
+  if ( replaceNaNs == TRUE || replaceOutliers == TRUE ) {
+    if ( argc != 3 ) {
+      cerr << "ERROR: output file missing" << endl;
+      return(1);
+    }
+    writeVerticesToFile( argv[2], vertexArray, numVertices );
+  }
 }

@@ -14,6 +14,8 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CXX
 
+AC_PATH_PROGS(PERL, perl5 perl)
+
 dnl Build only static libs by default
 
 smr_REQUIRED_LIB(m,sqrt,math.h)

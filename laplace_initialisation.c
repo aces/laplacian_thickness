@@ -367,14 +367,8 @@ int main ( int argc, char *argv[] )
                     NC_BYTE, FALSE, 0.0, 0.0, TRUE, 
                     &white_volume, NULL ) != OK )
     return( 1 );
-  if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
-                    NC_BYTE, FALSE, 0.0, 0.0, TRUE, 
-                    &grey_volume, NULL ) != OK )
-    return( 1 );
-  if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
-                    NC_BYTE, FALSE, 0.0, 0.0, TRUE, 
-                    &out_volume, NULL ) != OK )
-    return( 1 );
+  grey_volume = copy_volume( white_volume );
+  out_volume = copy_volume( white_volume );
 
   /* set the real range for the output volume */
   set_volume_real_range(out_volume, 0, 10000);

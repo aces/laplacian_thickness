@@ -7,7 +7,9 @@ extern "C" {
 using namespace std;
 
 // set up argument parsing defaults
-Real hValue         = 1;
+Real hValue         = 0.1;
+Real convergence    = 0.00001;
+int maxIterations   = 300;
 int vValue          = 1;
 char *objFile       = NULL;
 
@@ -17,6 +19,10 @@ ArgvInfo argTable[] = {
     "H value to use for Eulerian integration" },
   { "-v", ARGV_INT, (char *)0, (char *) &vValue,
     "Verbosity level (higher = more verbose)" },
+  { "-convergence", ARGV_FLOAT, (char *)0, (char *) &convergence,
+    "Stop criteria for equation relaxation." },
+  { "-max_iterations", ARGV_INT, (char *)0, (char *) &maxIterations,
+    "Maximum number of iterations for relaxation." },
   { "-object_eval", ARGV_STRING, (char *)0, (char *) &objFile,
     "Evaluate thickness only at vertices of the obj file. Output text rather than minc." },
 
@@ -37,7 +43,7 @@ int main(int argc, char* argv[]) {
   grid->setVerbosity( vValue );
 
   cout << "Relaxing Equation." << endl;
-  grid->relaxEquation(-1, 25);
+  grid->relaxEquation(convergence, maxIterations);
   cout << "Creating gradients." << endl;
   grid->createGradients();
   cout << "Normalising gradients." << endl;
@@ -68,7 +74,7 @@ int main(int argc, char* argv[]) {
     grid->output(argv[2]);
   }
   else {
-    cout << "Doing it per vertex" << endl;
+    cout << "  Only computing at each vertex" << endl;
     grid->computeAllThickness( hValue, objFile );
     grid->output( argv[2], true );
   }

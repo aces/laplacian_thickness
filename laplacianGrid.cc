@@ -48,6 +48,7 @@ laplacianGrid::laplacianGrid(char* mantleFile,
 // one iteration of solving laplace's equation
 float laplacianGrid::solveLaplace() {
 
+  Real fieldEnergy = 0;
   Real initialValue, newValue;
   for (int v0=1; v0 < this->sizes[0]-1; v0++) {
     for (int v1=1; v1 < this->sizes[1]-1; v1++) {
@@ -65,28 +66,44 @@ float laplacianGrid::solveLaplace() {
                       this->volume->getVoxel(v0, v1-1, v2) +
                       this->volume->getVoxel(v0, v1, v2-1) ) / 6;
           this->volume->setVoxel(newValue, v0, v1, v2);
+	  fieldEnergy += sqrt(newValue);
         }
       }
     }
   }
 
-  return 0.0; //should add code to evaluate convergence
+  return fieldEnergy; //should add code to evaluate convergence
 }
         
 // relax the equation
 void laplacianGrid::relaxEquation(float convergenceCriteria,
                                   int maxIterations) {
 
-  float convergenceResult = 10000; //arbitrary high number
+  float convergenceResult1 = 10000; //arbitrary high number
+  float convergenceResult2 = 1;     //arbitrary number as well
+  float convergence;   //also arbitrary
+
   int currentIteration = 1;
 
-  while (convergenceResult > convergenceCriteria &&
-         currentIteration < maxIterations) {
-    convergenceResult = this->solveLaplace();
-    if (this->verbosity >= 1) {
-      cout << "Converging: iteration # " << currentIteration 
-           << " with convergence result of " << convergenceResult << endl;
+  //  while (convergence > convergenceCriteria &&
+  //         currentIteration < maxIterations) {
+  for (;;) { // loop until break
+    convergenceResult1 = this->solveLaplace();
+
+    if (currentIteration > 1) {
+      convergence = (convergenceResult2 - convergenceResult1)
+	/ convergenceResult1;
+
+      if (this->verbosity >= 1) {
+	cout << "Converging: iteration # " << currentIteration 
+	     << " with convergence result of " << convergence << endl;
+      }
+      if ( convergence < convergenceCriteria )
+	break;
+      else if ( currentIteration >= maxIterations )
+	break;
     }
+    convergenceResult2 = convergenceResult1;
     currentIteration++;
   }
 }
@@ -331,6 +348,12 @@ Real laplacianGrid::streamLength(vector<Real> &Xvector,
     z = pow(Zvector[i] - Zvector[i+1], 2);
     length += sqrt(x + y + z);
   }
+  
+  // normalise unit to be millimetres
+  Real separations[MAX_DIMENSIONS];
+  get_volume_separations( this->fixedGrid->getVolume(), separations );
+  // the step size ought to be uniform. If not we're screwed anyway.
+  length *= separations[0];
   return length;
 }
 
@@ -366,8 +389,15 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile ) {
  	
   	vector<Real> xv, yv, zv;
 //  	cout << voxel[0] << " " << voxel[1] << " " << voxel[2] << endl;
-  	if (this->fixedGrid->getVoxel(rint(voxel[0]), rint(voxel[1]), rint(voxel[2])) < 6000 &&
-        this->fixedGrid->getVoxel(rint(voxel[0]), rint(voxel[1]), rint(voxel[2])) > 4000) {
+  	if (this->fixedGrid->getVoxel(int(rint(voxel[0])), 
+				      int(rint(voxel[1])), 
+				      int(rint(voxel[2]))) 
+				      < 6000 &&
+				      this->fixedGrid->getVoxel
+				      (int(rint(voxel[0])), 
+				       int(rint(voxel[1])), 
+				       int(rint(voxel[2]))) 
+				      > 4000) {
   	  this->createStreamline( (int)rint(voxel[1]),
 	                            (int)rint(voxel[2]),
 	                            (int)rint(voxel[0]),
