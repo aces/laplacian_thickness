@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
   
   // subdivide the polygons if so desired
   if (num_subdivisions > 0) {
-    (void) resample_polygon_vector(layers, 2);
+    (void) resample_polygon_vector(layers, num_subdivisions);
   }
 
   // create the bin trees

@@ -99,9 +99,9 @@ void laplacianGrid::relaxEquation(float convergenceCriteria,
 	     << " with convergence result of " << convergence << endl;
       }
       if ( convergence < convergenceCriteria )
-	break;
+        break;
       else if ( currentIteration >= maxIterations )
-	break;
+        break;
     }
     convergenceResult2 = convergenceResult1;
     currentIteration++;
