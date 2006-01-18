@@ -1,3 +1,11 @@
+2004-08-10	Jason Lerch	<jason@bic.mni.mcgill.ca>
+
+	* Switched the fixed grid to be a mniVolume rather than a
+	mniLabelVolume, since for some reason that was causing problems
+	on linux.
+	* Take absolute values during convergence checking. Appears to
+	work better.
+	
 2002-05-06	Jason Lerch	<jason@bic.mni.mcgill.ca>
 
 	* fourth order Runge-Kutta method (hopefully correctly) implemented.

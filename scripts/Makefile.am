@@ -1,5 +1,6 @@
 bin_SCRIPTS = laplacian_initialisation
 
+EXTRA_DIST = laplacian_initialisation.pl
 
 SUFFIXES = .pl
 .pl:

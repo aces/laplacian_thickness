@@ -73,8 +73,8 @@ void findFileOutliers( Real *vertexValues, int nPoints,
 
   // find the mean;
   sumTotal = 0;
-  numUsed = 1;
-  numNaN = 1;
+  numUsed = 0;
+  numNaN = 0;
   for (int i=0; i < nPoints; ++i ) {
     // check for not a number
     if ( vertexValues[i] != vertexValues[i] ) {
@@ -86,10 +86,13 @@ void findFileOutliers( Real *vertexValues, int nPoints,
     }
   }
 
-  stats->mean = sumTotal / numUsed;
+  if( numUsed > 0 ) {
+    stats->mean = sumTotal / numUsed;
+  } else {
+    stats->mean = 0.0;
+  }
 
   // find the standard deviation
-  Real *variances = new Real[nPoints];
   sumTotal = 0;
   for (int i=0; i < nPoints; ++i ) {
     // check for NaN
@@ -97,15 +100,18 @@ void findFileOutliers( Real *vertexValues, int nPoints,
       // do nothing
     }
     else {
-      variances[i] = fabs( vertexValues[i] - stats->mean );
-      sumTotal += variances[i];
+      sumTotal += fabs( vertexValues[i] - stats->mean );
     }
   }
-  stats->std = sqrt( sumTotal / numUsed );
+  if( numUsed > 1 ) {
+    stats->std = sqrt( sumTotal / ( numUsed - 1 ) );
+  } else {
+    stats->std = 0.0;
+  }
 
   // now do the replacement NOTE: instead of doing this globally it
   // ought to work based on neighbourhood information ...
-  numInvalid = 1;
+  numInvalid = 0;
   for (int i=0; i < nPoints;  ++i) {
     // check if NaN
     if ( vertexValues[i] != vertexValues[i] ) {

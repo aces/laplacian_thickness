@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT
 AC_CONFIG_SRCDIR([src/solveLaplacianGrid.cc])
-AM_INIT_AUTOMAKE(laplacian_thickness, 0.4)
+AM_INIT_AUTOMAKE(laplacian_thickness, 1.0)
 AM_CONFIG_HEADER(config.h)
 
 smr_WITH_BUILD_PATH

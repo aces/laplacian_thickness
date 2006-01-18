@@ -3,12 +3,15 @@
 
 #include <mniLabelVolume.h>
 #include <mniVolume.h>
-#include "laplacianGlobals.h"
-#include <vector>
 #include <math.h>
 #include <fstream>
 
 using namespace std;
+
+enum integrator { EULER, SECOND_ORDER_RK, FOURTH_ORDER_RK };
+enum interpolation { NEAREST_NEIGHBOUR_INTERP = -1,
+		     LINEAR_INTERP = 0,
+		     CUBIC_INTERP = 2 };
 
 class laplacianGrid {
 protected:
@@ -24,8 +27,12 @@ protected:
   Real *thicknessPerVertex;
   //! Holds number of vertices in obj file
   int numVertices;
+  //! Holds the successive over-relaxation acceleration factor
+  Real SOR;
+  //! Holds a copy of the volume data in cache (for speed)
+  Real * val;
   //! Hold the fixed grid
-  mniLabelVolume *fixedGrid;
+  mniVolume *fixedGrid;
   //! Hold the gradient volumes
   mniVolume *gradientX, *gradientY, *gradientZ;
   //! For progress reports
@@ -35,41 +42,34 @@ protected:
   //! Sets up the necessary volume information
   void initialiseVolumes(integrator type, nc_type gradientDataType);
   //! function pointer for the integration method to use.
-  void (laplacianGrid::*integrationStep)(vector<Real> &Xvector,
-					 vector<Real> &Yvector,
-					 vector<Real> &Zvector,
+  void (laplacianGrid::*integrationStep)(Real x, Real y, Real z,
 					 Real dx, Real dy, Real dz, Real h,
                                          Real &newx,
                                          Real &newy,
-                                         Real &newz,
-					 int currentStep);
-  void eulerStep(vector<Real> &Xvector,
-		 vector<Real> &Yvector,
-		 vector<Real> &Zvector,
+                                         Real &newz );
+  void eulerStep(Real x, Real y, Real z,
 		 Real dx, Real dy, Real dz, Real h,
                  Real &newx,
                  Real &newy,
-                 Real &newz,
-		 int currentStep);
-  void fourthOrderRungeKuttaStep(vector<Real> &Xvector,
-				 vector<Real> &Yvector,
-				 vector<Real> &Zvector,
+                 Real &newz );
+  void fourthOrderRungeKuttaStep(Real x, Real y, Real z,
 				 Real dx, Real dy, Real dz, Real h,
                                  Real &newx,
                                  Real &newy,
-                                 Real &newz,
-				 int currentStep);
-  void secondOrderRungeKuttaStep(vector<Real> &Xvector,
-				 vector<Real> &Yvector,
-				 vector<Real> &Zvector,
+                                 Real &newz );
+  void secondOrderRungeKuttaStep(Real x, Real y, Real z,
 				 Real dx, Real dy, Real dz, Real h,
                                  Real &newx,
                                  Real &newy,
-                                 Real &newz,
-				 int currentStep);
+                                 Real &newz );
 
   void getDerivatives( Real x, Real y, Real z,
 		       Real &dx, Real &dy, Real &dz );
+
+  void setCacheVoxel( Real value, int v0, int v1, int v2 ) {
+                      val[(v0*sizes[1]+v1)*sizes[2]+v2] = value; }
+  Real getCacheVoxel( int v0, int v1, int v2 ) {
+                      return( val[(v0*sizes[1]+v1)*sizes[2]+v2] ); }
 
   Real evaluate( Real x, Real y, Real z, interpolation interpType );  
 public:
@@ -88,31 +88,17 @@ public:
 		int outerValue,
 		integrator type = EULER,
 		nc_type volumeDataType = NC_SHORT,
-		nc_type gradientDataType = NC_BYTE);
+		nc_type gradientDataType = NC_FLOAT);
   
   //! solve one iteration of laplace's equation
   float solveLaplace();
   //! relax the equation
   void relaxEquation(float convergenceCriteria, int maxIterations);
-  //! create a gradient volume in each direction
-  void createGradients();
-  //! normalise the gradient volumes
-  void normaliseGradients();
-  //! integrate gradients using Euler's formula
-  void createStreamlines();
-  //! normalise according to units to get a thickness metric
-  void createThicknessMetric();
+  //! create the normalised gradients volume in each direction
+  void createNormalisedGradients();
   //! create a streamline at given voxel
-  void testFunction(vector<Real> &t);
-  void createStreamline(Real x0, Real y0, Real z0, Real h, 
-                        vector<Real> &Xvector,
-                        vector<Real> &Yvector,
-                        vector<Real> &Zvector,
+  Real createStreamline(Real x0, Real y0, Real z0, Real h, 
 			interpolation evalType);
-
-  Real streamLength(vector<Real> &Xvector,
-                    vector<Real> &Yvector,
-                    vector<Real> &Zvector);
 
   void computeAllThickness(Real h, 
 			   interpolation evalType = NEAREST_NEIGHBOUR_INTERP);
@@ -124,7 +110,6 @@ public:
   void output(char* filename, bool isTextFile=false);
   //! set the level of verbosity
   void setVerbosity(int newVerbosity) { this->verbosity = newVerbosity; };
-
 
 };
 
