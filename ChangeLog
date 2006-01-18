@@ -1,3 +1,13 @@
+2006-01-18      Claude Lepage   <claude@bic.mni.mcgill.ca>
+
+        * SOR Gauss-Seidel solver for better convergence
+        * New error norm for convergence test
+        * Fixed the hopefully correctly implemented fourth order
+        Runge-Kutta method (missing h)
+        * Forced floats for gradients calculation
+        * Removed clipping at 50 steps for integration (this was
+        giving truncated streamlines)
+
 2004-08-10	Jason Lerch	<jason@bic.mni.mcgill.ca>
 
 	* Switched the fixed grid to be a mniVolume rather than a

@@ -96,6 +96,15 @@ int main(int argc, char* argv[]) {
     return (1);
   }
 
+  // After parsing, check new value or argc
+  if( ( mode == FROM_SURFACES && argc != 4 ) ||
+      ( mode == FROM_GRID && argc != 3 ) ) {
+    cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
+    cerr << "\tor" << endl;
+    cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
+    return (1);
+  }
+
   int outside_value = 10;
   int inside_value = 0;
   char *grey_surface;
