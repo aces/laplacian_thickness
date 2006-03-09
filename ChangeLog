@@ -1,3 +1,8 @@
+2006-03-09      Claude Lepage   <claude@bic.mni.mcgill.ca>
+        * Restore command line options for backward compatibility for 
+          gradients calculation, but still force it to be in floats.
+          This is to avoid the old clasp to crash with -gradients-double.
+
 2006-01-18      Claude Lepage   <claude@bic.mni.mcgill.ca>
 
         * SOR Gauss-Seidel solver for better convergence

@@ -23,8 +23,11 @@ int  include_grey_boundary       = 0;
 char *likeFile                   = NULL; 
 nc_type volumeType               = NC_SHORT;   // NC_BYTE, NC_SHORT, NC_INT, NC_FLOAT, NC_DOUBLE
 nc_type gradientsType            = NC_FLOAT;   // MUST have float or double (CL)
-interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;   // MUST be nearest neighbout (CL)
+interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;   // MUST be nearest neighbour (CL)
                                    // NEAREST_NEIGHBOUR_INTERP, LINEAR_INTERP, CUBIC_INTERP
+
+nc_type gradientsJunk            = NC_FLOAT;                   // for backward compatibility (CL)
+interpolation boundaryJunk       = NEAREST_NEIGHBOUR_INTERP;   // for backward compatibility (CL)
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -83,6 +86,33 @@ ArgvInfo argTable[] = {
     "Volume is floating point precision." },
   { "-volume-double", ARGV_CONSTANT, (char *)NC_DOUBLE, (char *)&volumeType,
     "Volume is double floating point precision." },
+
+  { "-gradients-byte", ARGV_CONSTANT, (char *)NC_BYTE, (char *)&gradientsJunk,
+    "Gradients in byte format are no longer supported. Using float by default." },
+  { "-gradients-short", ARGV_CONSTANT, (char *)NC_SHORT,
+    (char *)&gradientsJunk,
+    "Gradients in short integer format are no longer supported. Using float by default." },
+  { "-gradients-int", ARGV_CONSTANT, (char *)NC_INT, (char *)&gradientsJunk,
+    "Gradients in integer format are no longer supported. Using float by default." },
+  { "-gradients-float", ARGV_CONSTANT, (char *)NC_FLOAT,
+    (char *)&gradientsType,
+    "Gradients are floating point precision." },
+  { "-gradients-double", ARGV_CONSTANT, (char *)NC_DOUBLE,
+    (char *)&gradientsType,
+    "Gradients are double floating point precision." },
+
+  { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
+    "\nBoundary evaluation control:" },
+  { "-boundary-nearest-neighbour", ARGV_CONSTANT,
+    (char *)NEAREST_NEIGHBOUR_INTERP,
+    (char *)&boundaryType,
+    "Use nearest neighbour interpolation." },
+  { "-boundary-linear", ARGV_CONSTANT, (char *)LINEAR_INTERP,
+    (char *)&boundaryJunk,
+    "Linear interpolation is no longer supported. Using nearest neighbour by default." },
+  { "-boundary-cubic", ARGV_CONSTANT, (char *)CUBIC_INTERP,
+    (char *)&boundaryJunk,
+    "Cubic interpolation is no longer supported. Using nearest neighbour by default." },
 
   { NULL, ARGV_END, NULL, NULL, NULL }
 };
