@@ -1,0 +1,9 @@
+%product laplacian_thickness
+%copyright 2000-2006 Jason Lerch
+%vendor McConnell Brain Imaging Centre
+%packager Claude Lepage <claude@bic.mni.mcgill.ca>
+%license COPYING
+%readme README
+%description Compute a Laplacian field for cortical thickness
+%version @VERSION@
+%requires bicpl

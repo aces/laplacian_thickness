@@ -1,8 +1,9 @@
-#!xPERLx -w
+#!@PERL@
 
 # creates the initial grid for solving using the laplacian thickness
 # method
 
+use warnings "all";
 use strict;
 
 use Getopt::Tabular;

@@ -1,4 +1,49 @@
+
+New in Release 1.0.1
+* epm-header and packaging for minc2 m4 files
+
+New in Release 1.0
+* Restore command line options for backward compatibility for 
+  gradients calculation, but still force it to be in floats.
+  This is to avoid the old clasp to crash with -gradients-double.
+* SOR Gauss-Seidel solver for better convergence
+* New error norm for convergence test
+* Fixed the hopefully correctly implemented fourth order
+  Runge-Kutta method (missing h)
+* Forced floats for gradients calculation
+* Removed clipping at 50 steps for integration (this was
+  giving truncated streamlines)
+
 New in Release 0.4
 * many more options to deal with data-types.
 * correct handling of data-types.
 * used in the thesis seminar presentation version of the simulation.
+
+
+
+2004-08-10	Jason Lerch	<jason@bic.mni.mcgill.ca>
+
+	* Switched the fixed grid to be a mniVolume rather than a
+	mniLabelVolume, since for some reason that was causing problems
+	on linux.
+	* Take absolute values during convergence checking. Appears to
+	work better.
+	
+2002-05-06	Jason Lerch	<jason@bic.mni.mcgill.ca>
+
+	* fourth order Runge-Kutta method (hopefully correctly) implemented.
+
+2002-05-06	Jason Lerch	<jason@bic.mni.mcgill.ca>
+
+	* using function pointers for the integration step. Can now handle
+	a second order runge-kutta model. A fourth order runge-kutta is
+	still in the works, as are real options in order to let the user
+	control which approach to take.
+	
+2002-04-21	Jason Lerch	<jason@bic.mni.mcgill.ca>
+	* improved the layered thickness implementation
+2002-04-20	Jason Lerch	<jason@bic.mni.mcgill.ca>
+	* started the ChangeLog (finally)
+	* added the linear_thickness directory
+	* started a layered linear thickness implementation
+	
