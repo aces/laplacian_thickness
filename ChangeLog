@@ -1,3 +1,6 @@
+2006-05-04      Claude Lepage   <claude@bic.mni.mcgill.ca>
+        * clean-up MNI::DataDir stuff
+
 2006-04-27      Claude Lepage   <claude@bic.mni.mcgill.ca>
         * epm-header and packaging for minc2 m4 files
 

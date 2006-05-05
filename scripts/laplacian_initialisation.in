@@ -5,6 +5,7 @@
 
 use warnings "all";
 use strict;
+use FindBin;
 
 use Getopt::Tabular;
 use MNI::Spawn;
@@ -22,7 +23,8 @@ my (@mincinfoOutput);
 
 # use one of the icbm models as the input volume
 if ($icbmModel) {
-  my $ModelDir = MNI::DataDir::dir('ICBM');
+  my $ModelDir = "$FindBin::bin/../share/ICBM/";
+  #my $ModelDir = MNI::DataDir::dir('ICBM');
   my @files = ("icbm_template_${icbmModel}mm.mnc");
   MNI::DataDir::check_data($ModelDir, \@files);
   $tmpVolume = "$ModelDir/icbm_template_${icbmModel}mm.mnc";
