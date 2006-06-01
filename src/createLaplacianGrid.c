@@ -336,18 +336,19 @@ private  BOOLEAN  get_extrapolated_value(
     return( n_bounds > 0 );
 }
 
-Volume create_mantle (   char *input_volume_filename,
-		       char *grey_surface_filename,
-		       char *white_surface_filename,
-		       int include_white_boundary,
-		       int include_grey_boundary )
+int create_mantle ( char *input_volume_filename,
+		    char *grey_surface_filename,
+		    char *white_surface_filename,
+		    int include_white_boundary,
+		    int include_grey_boundary,
+                    Volume out_volume )
 {
   /*
     STRING         input_volume_filename, output_file_name;
     STRING         grey_surface_filename, white_surface_filename;
     STRING         history;
   */
-  Volume         grey_volume , white_volume, out_volume;
+  Volume         grey_volume , white_volume;
   int            sizes[MAX_DIMENSIONS];
   int            x,y,z;
   Real           white_value, grey_value;
@@ -357,34 +358,11 @@ Volume create_mantle (   char *input_volume_filename,
   Real outside_value = 0;
   Real inside_value = 1;
 
-
-  /* create the history string from the input arguments */
-  /* should check for overflow */
-  /*
-    history = alloc_string(1024); 
-    for (i=0; i<argc; i++) {
-    strcat(history, argv[i]);
-    strcat(history, " ");
-    }
-  */
-  
-  /*
-    if ( ParseArgv( &argc, argv, argTable, 0 ) || ( argc != 5 )) {
-    print_error("Usage: %s in_volume grey_surface.obj white_surface.obj output.mnc \n", argv[0] );
-    return( 1 );
-    }
-
-    input_volume_filename  = argv[1];
-    grey_surface_filename  = argv[2];
-    white_surface_filename = argv[3];
-    output_file_name       = argv[4];
-  */
-  
-
   if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
                     NC_BYTE, FALSE, 0.0, 10.0, TRUE, 
-                    &white_volume, NULL ) != OK )
+                    &white_volume, NULL ) != OK ) {
     return( 1 );
+  }
   grey_volume = copy_volume( white_volume );
 
   out_volume = copy_volume( white_volume );
@@ -402,15 +380,6 @@ Volume create_mantle (   char *input_volume_filename,
                              white_volume );
 
   get_volume_sizes( out_volume, sizes );
-
-  /*
-  output_volume("white.mnc", NC_BYTE, FALSE, 0.0, 0.0,
-                white_volume, "", NULL );
-
-  output_volume("grey.mnc", NC_BYTE, FALSE, 0.0, 0.0,
-                grey_volume, "", NULL );
-  */
-
 
   /* now test for various possible conditions */
   for_less( x, 0, sizes[0] ) {
@@ -452,11 +421,7 @@ Volume create_mantle (   char *input_volume_filename,
     scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
   }
 
-  /*
-    output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
-    out_volume, history, NULL );
-  */
-  return out_volume;
+  return OK;
 }
 
 

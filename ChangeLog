@@ -1,3 +1,7 @@
+2006-06-01      Claude Lepage   <claude@bic.mni.mcgill.ca>
+        * get rid of ParseArgv and use the one from minc library
+        * fix return value from create_mantle to return a status code
+
 2006-05-04      Claude Lepage   <claude@bic.mni.mcgill.ca>
         * clean-up MNI::DataDir stuff
 

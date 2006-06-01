@@ -1,5 +1,4 @@
 noinst_HEADERS = \
-	ParseArgv.h \
 	createLaplacianGrid.h \
 	laplacianGrid.h
 
@@ -11,4 +10,4 @@ create_laplacian_grid_SOURCES = createLaplacianGrid_main.c \
 
 laplacian_thickness_SOURCES = createLaplacianGrid.c laplacianGrid.cc laplacianThickness.cc
 
-vertex_stats_SOURCES = vertexStats.cc ParseArgv.c
+vertex_stats_SOURCES = vertexStats.cc

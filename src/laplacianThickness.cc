@@ -151,12 +151,15 @@ int main(int argc, char* argv[]) {
     out_filename = argv[3];
     
     cout << "Creating cortical mantle." << endl;
-    Volume input_grid = create_mantle( likeFile,
-                                       grey_surface,
-                                       white_surface,
-                                       include_white_boundary,
-                                       include_grey_boundary );
-    cout << "Mantle created" << endl;
+    Volume input_grid;
+    if( create_mantle( likeFile, grey_surface, white_surface,
+                       include_white_boundary, include_grey_boundary,
+                       input_grid ) != OK ) {
+      cerr << "Error: Cannot create mantle" << endl << endl;
+      return (1);
+    } else {
+      cout << "Mantle created" << endl;
+    }
     grid = new laplacianGrid(input_grid, 
                              inside_value,
                              outside_value,
