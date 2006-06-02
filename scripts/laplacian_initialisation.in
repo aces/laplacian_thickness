@@ -23,7 +23,7 @@ my (@mincinfoOutput);
 
 # use one of the icbm models as the input volume
 if ($icbmModel) {
-  my $ModelDir = "$FindBin::bin/../share/ICBM/";
+  my $ModelDir = "$FindBin::Bin/../share/ICBM/";
   #my $ModelDir = MNI::DataDir::dir('ICBM');
   my @files = ("icbm_template_${icbmModel}mm.mnc");
   MNI::DataDir::check_data($ModelDir, \@files);
