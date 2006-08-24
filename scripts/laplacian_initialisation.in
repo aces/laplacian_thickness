@@ -87,7 +87,6 @@ sub Initialise {
 
     GetOptions(\@argTbl, \@ARGV, \@leftOverArgs) or die "\n";
 
-#    $inputVolume = shift @leftOverArgs or die $usage;
     $grey = shift @leftOverArgs or die $usage;
     $white = shift @leftOverArgs or die $usage;
     $outputFile = shift @leftOverArgs or die $usage;

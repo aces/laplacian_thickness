@@ -341,7 +341,7 @@ int create_mantle ( char *input_volume_filename,
 		    char *white_surface_filename,
 		    int include_white_boundary,
 		    int include_grey_boundary,
-                    Volume out_volume )
+                    Volume * out_volume )
 {
   /*
     STRING         input_volume_filename, output_file_name;
@@ -363,12 +363,13 @@ int create_mantle ( char *input_volume_filename,
                     &white_volume, NULL ) != OK ) {
     return( 1 );
   }
+
   grey_volume = copy_volume( white_volume );
 
-  out_volume = copy_volume( white_volume );
+  *out_volume = copy_volume( white_volume );
 
   /* set the real range for the output volume */
-  set_volume_real_range(out_volume, 0, 10); 
+  set_volume_real_range(*out_volume, 0, 10); 
 
   (void) binary_object_mask( grey_surface_filename,
                              outside_value,
@@ -379,7 +380,7 @@ int create_mantle ( char *input_volume_filename,
                              inside_value,
                              white_volume );
 
-  get_volume_sizes( out_volume, sizes );
+  get_volume_sizes( *out_volume, sizes );
 
   /* now test for various possible conditions */
   for_less( x, 0, sizes[0] ) {
@@ -390,20 +391,20 @@ int create_mantle ( char *input_volume_filename,
         /*        printf("Grey: %f White: %f\n", grey_value, white_value);*/
         if (grey_value > 0.5 && white_value > 0.5 ) {
           /* inside both surfaces */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 0);
+          set_volume_real_value(*out_volume, x, y, z, 0, 0, 0);
         }
         else if (grey_value > 0.5 && white_value < 0.5) {
           /* in mantle */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 5);
+          set_volume_real_value(*out_volume, x, y, z, 0, 0, 5);
         }
         else if (grey_value < 0.5 && white_value < 0.5) {
           /* outside both surfaces */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 10);
+          set_volume_real_value(*out_volume, x, y, z, 0, 0, 10);
         }
         else if (grey_value < 0.5 && white_value > 0.5){
           /* shouldn't happen, as this means overlap - treat as mantle
              for now */
-          set_volume_real_value(out_volume, x, y, z, 0, 0, 2);
+          set_volume_real_value(*out_volume, x, y, z, 0, 0, 2);
         }
       }
     }
@@ -413,12 +414,12 @@ int create_mantle ( char *input_volume_filename,
   if ( include_white_boundary == 1 ) {
     input_graphics_file(white_surface_filename, &format, &n_objects,
                         &objects);
-    scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
+    scan_object_to_volume(objects[0], *out_volume, *out_volume, 5000, 1);
   }
   if ( include_grey_boundary == 1 ) {
     input_graphics_file(grey_surface_filename, &format, &n_objects,
                         &objects);
-    scan_object_to_volume(objects[0], out_volume, out_volume, 5000, 1);
+    scan_object_to_volume(objects[0], *out_volume, *out_volume, 5000, 1);
   }
 
   return OK;

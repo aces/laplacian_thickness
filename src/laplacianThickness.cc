@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
     Volume input_grid;
     if( create_mantle( likeFile, grey_surface, white_surface,
                        include_white_boundary, include_grey_boundary,
-                       input_grid ) != OK ) {
+                       &input_grid ) != OK ) {
       cerr << "Error: Cannot create mantle" << endl << endl;
       return (1);
     } else {

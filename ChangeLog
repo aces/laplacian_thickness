@@ -1,3 +1,11 @@
+
+2006-08-14      Claude Lepage   <claude@bic.mni.mcgill.ca>
+	* fix createLaplacianGrid_main.c to make use of return value from 
+          create_mantle and return a value itself (used by Laplacian 
+          thickness).
+	* fix create_mantle to pass out_volume by reference (I have no
+          clue how this could have worked before).
+
 2006-06-01      Claude Lepage   <claude@bic.mni.mcgill.ca>
         * get rid of ParseArgv and use the one from minc library
         * fix return value from create_mantle to return a status code

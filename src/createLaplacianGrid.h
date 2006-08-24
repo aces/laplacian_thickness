@@ -9,7 +9,7 @@ extern int create_mantle ( char *input_volume_filename,
 			   char *white_surface_filename,
 			   int include_white_boundary,
 			   int include_grey_boundary,
-                           Volume vol );
+                           Volume *vol );
 
 #endif
 

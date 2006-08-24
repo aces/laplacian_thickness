@@ -1,3 +1,8 @@
+New in Release 1.0.3
+* fix createLaplacianGrid_main.c to make use of return value from
+  create_mantle and return a value itself (used by Laplacian thickness).
+* fix create_mantle to pass out_volume by reference.
+
 New in Release 1.0.2
 * get rid of ParseArgv and use the one from minc library
 * fix return value from create_mantle to return a status code

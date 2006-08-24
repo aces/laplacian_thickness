@@ -44,16 +44,21 @@ int main( int argc, char *argv[] ) {
   grey_surface_filename  = argv[2];
   white_surface_filename = argv[3];
   output_file_name       = argv[4];
-  
 
   if( create_mantle( input_volume_filename, grey_surface_filename,
                      white_surface_filename, include_white_boundary,
-                     include_grey_boundary, out_volume ) != OK ) {
+                     include_grey_boundary, &out_volume ) != OK ) {
     print_error( "Error: Cannot create mantle %s for Laplacian field\n", output_file_name );
+    return( 1 );
   } else {
-    output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 0.0,
-		  out_volume, history, NULL );
-    printf( "Created mantle %s for Laplacian field\n", output_file_name );
+    if( output_volume(output_file_name, NC_BYTE, FALSE, 0.0, 10.0,
+		      out_volume, history, NULL ) ) {
+      printf( "Error: Cannot create mantle %s for Laplacian field\n", output_file_name );
+      return( 1 );
+    } else {
+      printf( "Created mantle %s for Laplacian field\n", output_file_name );
+      return( 0 );
+    }
   }
-
+  return( 0 );
 }
