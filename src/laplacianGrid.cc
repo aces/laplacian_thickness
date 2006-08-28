@@ -103,6 +103,9 @@ void laplacianGrid::initialiseVolumes(integrator integrationType,
   gradientY->setRealRange(lower, upper);
   gradientZ->setRealRange(lower, upper);
 
+  // assume that length of streamlines will be computed
+  this->computeAverage = false;
+
   // set default verbosity to 0
   this->verbosity = 0;
   
@@ -138,6 +141,27 @@ Real laplacianGrid::evaluate( Real x, Real y, Real z,
   //  return this->fixedGrid->getInterpolatedVoxel(x,y,z);
   return this->fixedGrid->getInterpolatedVoxel(x, y, z, interpType);
 }
+
+Real laplacianGrid::evaluateAvgVolume( Real x, Real y, Real z,
+				       interpolation interpType ) {
+  return this->avgVolume->getInterpolatedVoxel(x, y, z, interpType);
+}
+								   
+void laplacianGrid::setToAverageAlongStreamlines(char* avgFile, 
+						 nc_type volumeDataType) {
+  this->computeAverage = true;
+  this->avgVolume = new mniVolume(avgFile,
+				  0.0,
+				  0.0,
+				  3,
+				  XYZdimOrder,
+				  volumeDataType,
+				  TRUE,
+				  TRUE,
+				  NULL);
+}
+
+
 
 // take an integration step using Euler's method (in voxel space)
 inline void laplacianGrid::eulerStep(Real x, Real y, Real z,
@@ -354,13 +378,18 @@ void laplacianGrid::createNormalisedGradients() {
 
 // use integration method, first towards one then towards the other surface
 // Return the length of the streamline (in voxel units).
+// Alternately returns the average values along a streamline. This behaviour
+// is enabled by calling setToAverageAlongStreamlines.
 Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
 				     interpolation evalType) {
 
   Real oldx, oldy, oldz, newx, newy, newz;
-  Real dx, dy, dz, mag, length;
+  Real dx, dy, dz, mag, length, sumValue;
+  int nsteps;
 
   length = 0;
+  sumValue = 0;
+  nsteps = 0;
 
   Real eval0 = this->evaluate( x0, y0, z0, evalType );
   Real evaluation = eval0;
@@ -380,11 +409,18 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
       (*this.*integrationStep)( oldx, oldy, oldz, dx, dy, dz, h,
                                 newx, newy, newz );
 
-      length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
-                      (newz-oldz)*(newz-oldz) );
-
+      if (computeAverage) {
+	sumValue += this->evaluateAvgVolume( newx, newy, newz, evalType );
+	nsteps++;
+      }
+      else {
+	length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
+			(newz-oldz)*(newz-oldz) );
+      }
+      
       // find out where we are
       evaluation = this->evaluate( newx, newy, newz, evalType );
+
       oldx = newx;
       oldy = newy;
       oldz = newz;
@@ -408,8 +444,14 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
       (*this.*integrationStep)( oldx, oldy, oldz, dx, dy, dz, -h,
                                 newx, newy, newz );
 
-      length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
-                      (newz-oldz)*(newz-oldz) );
+      if (computeAverage) {
+	sumValue += this->evaluateAvgVolume( newx, newy, newz, evalType );
+	nsteps++;
+      }
+      else {
+	length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
+			(newz-oldz)*(newz-oldz) );
+      }
 
       // find out where we are
       evaluation = this->evaluate( newx, newy, newz, evalType );
@@ -418,7 +460,14 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
       oldz = newz;
     }
   }
-  return( length );
+  if (computeAverage) {
+    //cout << sumValue << " " << nsteps<< " " << sumValue / nsteps << endl;
+
+    return (sumValue / nsteps );
+  }
+  else {
+    return( length );
+  }
 }
 
 void laplacianGrid::computeAllThickness( Real h, char *objFile,
@@ -427,7 +476,7 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile,
   int 		point, nPoints, nObjects;
   Point 	*points;
   object_struct **objects;
-  Real          *voxel, length;
+  Real          *voxel, result;
   Real          interpVoxel[3];
 		
   // open the file
@@ -451,7 +500,7 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile,
   get_volume_separations( this->fixedGrid->getVolume(), separations );
   
   initialize_progress_report( &this->progressReport, FALSE, nPoints,
-			      "Computing thickness streamlines" );
+			      "Computing streamlines" );
   for (int i=0; i < nPoints; i++) {
     voxel = this->fixedGrid->convertWorldToVoxel(
 						 RPoint_x(points[i]),
@@ -465,15 +514,17 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile,
 	 voxel[1], 
 	 voxel[2]) 
 	> this->innerValue) {
-      length = this->createStreamline(voxel[0], voxel[1], voxel[2], h, evalType );
-      length *= separations[0];
+      result = this->createStreamline(voxel[0], voxel[1], voxel[2], h, evalType );
+      if (computeAverage == false){
+	result *= separations[0];
+      }
     } else {
-      length = 0;
+      result = 0;
       if ( this->verbosity > 1 ) {
         cout << "Could not evaluate at vertex " << i << endl;
       }
     }
-    this->thicknessPerVertex[i] = length;
+    this->thicknessPerVertex[i] = result;
     update_progress_report( &this->progressReport, i );
   }
 }
@@ -494,9 +545,11 @@ void laplacianGrid::computeAllThickness(Real h, interpolation evalType) {
       for (int v3=1; v3 < this->sizes[2]-1; v3++) {
         if (this->fixedGrid->getVoxel(v1, v2, v3) > this->innerValue && 
             this->fixedGrid->getVoxel(v1, v2, v3) < this->outerValue) {
-          Real length = this->createStreamline(v1, v2, v3, h, evalType);
-          length *= separations[0];
-          this->volume->setVoxel(length ,v1, v2, v3);
+          Real result = this->createStreamline(v1, v2, v3, h, evalType);
+	  if (computeAverage == false) {
+	    result *= separations[0];
+	  }
+          this->volume->setVoxel(result ,v1, v2, v3);
         }
         else {
           this->volume->setVoxel(0, v1, v2, v3);

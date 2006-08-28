@@ -1,3 +1,8 @@
+New in Release 1.1.0
+* added the ability to, rather than computing the length of
+  streamlines (i.e. cortical thickness), compute the average values of a
+  specified volume along the streamlines.
+
 New in Release 1.0.3
 * fix createLaplacianGrid_main.c to make use of return value from
   create_mantle and return a value itself (used by Laplacian thickness).

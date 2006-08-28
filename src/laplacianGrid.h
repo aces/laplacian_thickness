@@ -35,6 +35,10 @@ protected:
   mniVolume *fixedGrid;
   //! Hold the gradient volumes
   mniVolume *gradientX, *gradientY, *gradientZ;
+  //! Hold the file whose values to average along streamline
+  mniVolume *avgVolume;
+  //! Variable to decide whether to compute average or length
+  bool computeAverage;
   //! For progress reports
   progress_struct progressReport;
   //! Hold the level of verbosity
@@ -72,6 +76,7 @@ protected:
                       return( val[(v0*sizes[1]+v1)*sizes[2]+v2] ); }
 
   Real evaluate( Real x, Real y, Real z, interpolation interpType );  
+  Real evaluateAvgVolume( Real x, Real y, Real z, interpolation interpType );  
 public:
   //! constructor from corticalMantle
   //  laplacianGrid(corticalMantle *mantle);
@@ -96,6 +101,9 @@ public:
   void relaxEquation(float convergenceCriteria, int maxIterations);
   //! create the normalised gradients volume in each direction
   void createNormalisedGradients();
+  //! compute average across streamline rather than length of streamline
+  void setToAverageAlongStreamlines(char* avgFile,
+				    nc_type volumeDataType=NC_SHORT);
   //! create a streamline at given voxel
   Real createStreamline(Real x0, Real y0, Real z0, Real h, 
 			interpolation evalType);

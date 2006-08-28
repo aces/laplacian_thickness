@@ -21,6 +21,7 @@ operation mode                   = FROM_SURFACES;
 int  include_white_boundary      = 0;
 int  include_grey_boundary       = 0;
 char *likeFile                   = NULL; 
+char *averageFile                = NULL;
 nc_type volumeType               = NC_SHORT;   // NC_BYTE, NC_SHORT, NC_INT, NC_FLOAT, NC_DOUBLE
 nc_type gradientsType            = NC_FLOAT;   // MUST have float or double (CL)
 interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;   // MUST be nearest neighbour (CL)
@@ -64,6 +65,9 @@ ArgvInfo argTable[] = {
     "Evaluate thickness only at vertices of the obj file. \n\t\t\t\tOutput text rather than minc." },
   { "-potential_only", ARGV_CONSTANT, (char *)1, (char *) &potentialOnly,
     "Output only the potential field and stop." },
+  { "-average_along_streamlines", ARGV_STRING, (char *)0, 
+    (char *) &averageFile,
+    "Compute mean value of voxels in specified file along streamlines." },
 
   { NULL, ARGV_HELP, (char *)NULL, (char *)NULL,
     "\nIntegration Options:" },
@@ -195,7 +199,15 @@ int main(int argc, char* argv[]) {
   cout << "Creating normalised gradients." << endl;
   grid->createNormalisedGradients();
 
-  cout << "Beginning computation of thicknesses." << endl;
+  if ( averageFile == NULL ) {
+    cout << "Beginning computation of thicknesses." << endl;
+  }
+  else {
+    grid->setToAverageAlongStreamlines( averageFile );
+    cout << "Beginning averaging of values along streamlines." << endl;
+  }
+
+  
 
   if( objFile == NULL ) {
     grid->computeAllThickness( hValue, boundaryType );

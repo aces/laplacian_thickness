@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.57])
 
 # The arguments are package name, and package version.
-AC_INIT([laplacian_thickness],[1.0.3],[Claude Lepage <claude@bic.mni.mcgill.ca>])
+AC_INIT([laplacian_thickness],[1.1.0],[Claude Lepage <claude@bic.mni.mcgill.ca>])
 AC_CONFIG_SRCDIR([src/laplacianThickness.cc])
 
 AM_INIT_AUTOMAKE

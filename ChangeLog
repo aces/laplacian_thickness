@@ -1,4 +1,9 @@
-
+2006-08-28	Jason Lerch	<jason@sickkids.ca>
+	* added the ability to average values of a volume along a streamline.
+	* made averaging accessible through -average_along_streamlines option
+	* bumped version number to 1.1
+	* added Claude to AUTHORS (about time!)
+	
 2006-08-14      Claude Lepage   <claude@bic.mni.mcgill.ca>
 	* fix createLaplacianGrid_main.c to make use of return value from 
           create_mantle and return a value itself (used by Laplacian 
