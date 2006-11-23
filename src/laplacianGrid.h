@@ -101,6 +101,8 @@ public:
   void relaxEquation(float convergenceCriteria, int maxIterations);
   //! create the normalised gradients volume in each direction
   void createNormalisedGradients();
+  //! save the gradient volumes to file
+  void saveGradients( char* gradientPrefix );
   //! compute average across streamline rather than length of streamline
   void setToAverageAlongStreamlines(char* avgFile,
 				    nc_type volumeDataType=NC_SHORT);

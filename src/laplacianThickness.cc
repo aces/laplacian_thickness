@@ -22,6 +22,7 @@ int  include_white_boundary      = 0;
 int  include_grey_boundary       = 0;
 char *likeFile                   = NULL; 
 char *averageFile                = NULL;
+char *gradientPrefix             = NULL;  // prefix if gradient files are to be saved
 nc_type volumeType               = NC_SHORT;   // NC_BYTE, NC_SHORT, NC_INT, NC_FLOAT, NC_DOUBLE
 nc_type gradientsType            = NC_FLOAT;   // MUST have float or double (CL)
 interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;   // MUST be nearest neighbour (CL)
@@ -29,6 +30,7 @@ interpolation boundaryType       = NEAREST_NEIGHBOUR_INTERP;   // MUST be neares
 
 nc_type gradientsJunk            = NC_FLOAT;                   // for backward compatibility (CL)
 interpolation boundaryJunk       = NEAREST_NEIGHBOUR_INTERP;   // for backward compatibility (CL)
+
 
 // argument parsing table
 ArgvInfo argTable[] = {
@@ -65,6 +67,8 @@ ArgvInfo argTable[] = {
     "Evaluate thickness only at vertices of the obj file. \n\t\t\t\tOutput text rather than minc." },
   { "-potential_only", ARGV_CONSTANT, (char *)1, (char *) &potentialOnly,
     "Output only the potential field and stop." },
+  { "-save_gradients", ARGV_STRING, (char *)0, (char *) &gradientPrefix,
+    "Save the three gradient files with the provided filename prefix." },
   { "-average_along_streamlines", ARGV_STRING, (char *)0, 
     (char *) &averageFile,
     "Compute mean value of voxels in specified file along streamlines." },
@@ -193,11 +197,22 @@ int main(int argc, char* argv[]) {
 
   if ( potentialOnly == 1 ) {
     grid->output(out_filename);
-    exit(0);
+    if ( gradientPrefix == NULL ) {
+      exit(0);
+    }
   }
 
   cout << "Creating normalised gradients." << endl;
   grid->createNormalisedGradients();
+
+  // optionally save the gradients
+  if ( gradientPrefix != NULL ) {
+    grid->saveGradients( gradientPrefix );
+  }
+
+  if ( potentialOnly == 1 ) {
+    exit(0);
+  }
 
   if ( averageFile == NULL ) {
     cout << "Beginning computation of thicknesses." << endl;

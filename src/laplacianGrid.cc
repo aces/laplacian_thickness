@@ -1,4 +1,5 @@
 #include "laplacianGrid.h"
+#include <string>
 
 // constructor from file
 laplacianGrid::laplacianGrid(char* mantleFile, 
@@ -374,6 +375,29 @@ void laplacianGrid::createNormalisedGradients() {
       }
     }
   }
+}
+
+void laplacianGrid::saveGradients(char* gradientPrefix) {
+  string gradientXFilename;
+  string gradientYFilename;
+  string gradientZFilename;
+
+  gradientXFilename = gradientPrefix;
+  gradientXFilename.append("_dx.mnc");
+  gradientYFilename = gradientPrefix;
+  gradientYFilename.append("_dy.mnc");
+  gradientZFilename = gradientPrefix;
+  gradientZFilename.append("_dz.mnc");
+
+  cout << "Outputting X gradient to " << gradientXFilename << endl;
+  this->gradientX->output((char *)gradientXFilename.c_str());
+
+  cout << "Outputting Y gradient to " << gradientYFilename << endl;
+  this->gradientY->output((char *)gradientYFilename.c_str());
+
+  cout << "Outputting Z gradient to " << gradientZFilename << endl;
+  this->gradientZ->output((char *)gradientZFilename.c_str());
+
 }
 
 // use integration method, first towards one then towards the other surface

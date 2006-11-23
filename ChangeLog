@@ -1,3 +1,6 @@
+2006-11-23
+	* added the option to save the gradients as minc volumes
+
 2006-08-28	Jason Lerch	<jason@sickkids.ca>
 	* added the ability to average values of a volume along a streamline.
 	* made averaging accessible through -average_along_streamlines option
