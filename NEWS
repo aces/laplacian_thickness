@@ -1,3 +1,8 @@
+New in Release 1.1.2
+* fix call to input_volume() in createLaplacianGrid.c
+  to allow reading the -like file in any datatype in
+  -from_surfaces mode (would crash if not in NC_BYTE)
+
 New in Release 1.1.1
 * added the ability to save gradients as MINC volumes.
 

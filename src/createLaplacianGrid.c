@@ -359,22 +359,25 @@ int create_mantle ( char *input_volume_filename,
   Real inside_value = 1;
 
   if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
-                    NC_BYTE, FALSE, 0.0, 10.0, TRUE, 
+                    NC_BYTE, FALSE, 0.0, 255.0, TRUE, 
                     &white_volume, NULL ) != OK ) {
     return( 1 );
   }
+  set_volume_real_range(white_volume, 0, 10); 
 
-  grey_volume = copy_volume( white_volume );
+  grey_volume = copy_volume_definition( white_volume, NC_BYTE,
+                                        FALSE, 0.0, 255.0 );
+  set_volume_real_range(grey_volume, 0, 10); 
 
-  *out_volume = copy_volume( white_volume );
-
-  /* set the real range for the output volume */
+  *out_volume = copy_volume_definition( white_volume, NC_BYTE,
+                                        FALSE, 0.0, 255.0 );
   set_volume_real_range(*out_volume, 0, 10); 
 
   (void) binary_object_mask( grey_surface_filename,
                              outside_value,
                              inside_value,
                              grey_volume );
+
   (void) binary_object_mask( white_surface_filename,
                              outside_value,
                              inside_value,
@@ -409,6 +412,9 @@ int create_mantle ( char *input_volume_filename,
       }
     }
   }
+
+  delete_volume( grey_volume );
+  delete_volume( white_volume );
 
   /* force inclusion of the boundaries if so desired */
   if ( include_white_boundary == 1 ) {
