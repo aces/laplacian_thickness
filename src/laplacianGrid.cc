@@ -437,13 +437,25 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
 	sumValue += this->evaluateAvgVolume( newx, newy, newz, evalType );
 	nsteps++;
       }
-      else {
-	length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
-			(newz-oldz)*(newz-oldz) );
-      }
+      length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
+                      (newz-oldz)*(newz-oldz) );
       
       // find out where we are
       evaluation = this->evaluate( newx, newy, newz, evalType );
+
+      // This is a quick check to make sure that the streamline
+      // is not bifurcating in saddle points or getting trapped
+      // around a local max (isolated csf voxel inside gray
+      // matter). If the streamline length is more than 4 times
+      // the straight line distance between the starting point
+      // and the end point, then likely something is wrong.
+
+      Real line_dist = sqrt( (newx-x0)*(newx-x0) + (newy-y0)*(newy-y0) +
+                             (newz-z0)*(newz-z0) );
+
+      if( length > 4.0 * line_dist ) {
+        evaluation = this->outerValue;
+      }
 
       oldx = newx;
       oldy = newy;
@@ -456,6 +468,8 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   oldy = y0;
   oldz = z0;
   evaluation = eval0;
+  Real length1 = length;
+  length = 0.0;
 
   while (evaluation > this->innerValue) {
 
@@ -472,18 +486,33 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
 	sumValue += this->evaluateAvgVolume( newx, newy, newz, evalType );
 	nsteps++;
       }
-      else {
-	length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
-			(newz-oldz)*(newz-oldz) );
-      }
+      length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
+		      (newz-oldz)*(newz-oldz) );
 
       // find out where we are
       evaluation = this->evaluate( newx, newy, newz, evalType );
+
+      // This is a quick check to make sure that the streamline
+      // is not bifurcating in saddle points or getting trapped
+      // around a local max (isolated csf voxel inside gray
+      // matter). If the streamline length is more than 4 times
+      // the straight line distance between the starting point
+      // and the end point, then likely something is wrong.
+
+      Real line_dist = sqrt( (newx-x0)*(newx-x0) + (newy-y0)*(newy-y0) +
+                             (newz-z0)*(newz-z0) );
+
+      if( length > 4.0 * line_dist ) {
+        evaluation = this->innerValue;
+      }
+
       oldx = newx;
       oldy = newy;
       oldz = newz;
     }
   }
+  length += length1;
+
   if (computeAverage) {
     //cout << sumValue << " " << nsteps<< " " << sumValue / nsteps << endl;
 

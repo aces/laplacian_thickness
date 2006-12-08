@@ -2,6 +2,8 @@
 	* fix call to input_volume() in createLaplacianGrid.c
           to allow reading the -like file in any datatype in
           -from_surfaces mode (would crash if not in NC_BYTE)
+	* add check to avoid endless streamlines (when streamline
+          spirals around a local max)
 
 2006-11-23
         * added the option to save the gradients as minc volumes
