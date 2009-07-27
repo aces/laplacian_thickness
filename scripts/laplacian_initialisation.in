@@ -110,7 +110,7 @@ sub Initialise {
 }
 
 sub createInfoText {
-    $license = << LICENSE;
+    $license = <<LICENSE;
 Copyright Alan C. Evans
 Professor of Neurology
 McGill University
