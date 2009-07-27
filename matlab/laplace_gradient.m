@@ -1,3 +1,8 @@
+%
+% Copyright Alan C. Evans
+% Professor of Neurology
+% McGill University
+%
 function [dx, dy] = laplace_gradient(lattice)
 % LAPLACE_GRADIENT - gradient of laplace grid
 %

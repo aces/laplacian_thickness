@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 /****
  * Code in this file deals with creating a series of layered surfaces.
  *
@@ -97,6 +102,9 @@ int main(int argc, char *argv[]) {
   // argument handlingq
   if ( ParseArgv(&argc, argv, argTable, 0) || (argc != 4) ){
     cerr << "Usage: " << argv[0] << " [options] white_surface.obj grey_surface.obj thickness.txt" << endl;
+    cerr << endl << "Copyright Alan C. Evans" << endl
+                 << "Professor of Neurology" << endl
+                 << "McGill University" << endl;
     return(1);
   }
   surface1_filename  = argv[1];

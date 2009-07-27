@@ -1,3 +1,8 @@
+%
+% Copyright Alan C. Evans
+% Professor of Neurology
+% McGill University
+%
 function lattice = solve_laplace2(grid, convergence_criteria)
 % SOLVE_LAPLACE2 - solves laplaces equation in two dimensions
 % LATTICE = SOLVE_LAPLACE2(S, S_PRIME, CONVERGENCE_CRITERIA)

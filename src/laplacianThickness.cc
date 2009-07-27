@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 #include "laplacianGrid.h"
 
 extern "C" {
@@ -131,6 +136,9 @@ int main(int argc, char* argv[]) {
     cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
     cerr << "\tor" << endl;
     cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
+    cerr << endl << "Copyright Alan C. Evans" << endl
+                 << "Professor of Neurology" << endl
+                 << "McGill University" << endl;
     return (1);
   }
 
@@ -140,6 +148,9 @@ int main(int argc, char* argv[]) {
     cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
     cerr << "\tor" << endl;
     cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
+    cerr << endl << "Copyright Alan C. Evans" << endl
+                 << "Professor of Neurology" << endl
+                 << "McGill University" << endl;
     return (1);
   }
 
@@ -185,8 +196,6 @@ int main(int argc, char* argv[]) {
                              integration,
 			     volumeType,
 			     gradientsType);
-    cout << "after constructor " << out_filename << endl;
-
   }
 
 

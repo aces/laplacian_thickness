@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 #include "surface_functions.h"
 
 void resample_polygon_vector( vector<polygons_struct> &layers,

@@ -1,8 +1,12 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 /***************************************************************************
                           surfaceStats.cc  -  description
                              -------------------
     begin                : Wed Oct 24 2001
-    copyright            : (C) 2001 by jason
     email                : jason@darwin
  ***************************************************************************/
 
@@ -209,6 +213,9 @@ int main( int argc, char *argv[] ) {
   if ( ParseArgv( &argc, argv, argTable, 0 ) || (! argc > 1 ) ) {
     cerr << "Usage: " << argv[0] << " [options] input.txt [output.txt]"
 	 << endl;
+    cerr << endl << "Copyright Alan C. Evans" << endl
+                 << "Professor of Neurology" << endl
+                 << "McGill University" << endl;
     return(1);
   }
 

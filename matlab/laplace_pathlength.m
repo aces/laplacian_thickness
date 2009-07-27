@@ -1,3 +1,8 @@
+%
+% Copyright Alan C. Evans
+% Professor of Neurology
+% McGill University
+%
 function length = laplace_pathlength(ly, lx)
 
 S = max(size(ly));

@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 /***
  * A revised t_normal thickness implementation
  * $Id$
@@ -95,7 +100,14 @@ int main(int argc, char *argv[]) {
   File_formats format;
   polygons_struct *polygons1, *polygons2;
   object_struct **object_list;
-  
+
+  if( argc != 4 ) {
+    cerr << "Usage: " << argv[0] << " white_surface.obj grey_surface.obj thickness.txt" << endl;
+    cerr << endl << "Copyright Alan C. Evans" << endl
+                 << "Professor of Neurology" << endl
+                 << "McGill University" << endl;
+  }
+
   surface1_filename = argv[1];
   surface2_filename = argv[2];
   thickness_filename = argv[3];

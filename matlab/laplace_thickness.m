@@ -1,3 +1,8 @@
+%
+% Copyright Alan C. Evans
+% Professor of Neurology
+% McGill University
+%
 function thickness_lattice = laplace_thickness(lattice, dx, dy)
 % LAPLACE_THICKNESS - create a laplacian thickness map in 2 dimensions
 % 

@@ -1,3 +1,8 @@
+%
+% Copyright Alan C. Evans
+% Professor of Neurology
+% McGill University
+%
 function grid = laplace_prepare_grid(S, S_prime)
 % LAPLACE_PREPARE_GRID - initialise grid for solving
 % GRID = LAPLACE_PREPARE_GRID(S, S_prime)

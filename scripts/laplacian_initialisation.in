@@ -1,4 +1,9 @@
 #!@PERL@
+#
+# Copyright Alan C. Evans
+# Professor of Neurology
+# McGill University
+#
 
 # creates the initial grid for solving using the laplacian thickness
 # method
@@ -16,7 +21,7 @@ use MNI::DataDir;
 my ($stepValue, $icbmModel);
 my ($inputVolume, $grey, $white, $outputFile);
 my ($tmpVolume);
-my ($help, $usage);
+my ($help, $usage, $license);
 my (@mincinfoOutput);
 
 &Initialise;
@@ -105,10 +110,18 @@ sub Initialise {
 }
 
 sub createInfoText {
+    $license = << LICENSE;
+Copyright Alan C. Evans
+Professor of Neurology
+McGill University
+LICENSE
+
     $usage = <<USAGE;
 Usage: $ProgramName [options] grey_surface.obj ... 
            white_surface.obj output_grid.mnc
        $ProgramName -help for details
+
+$license
 USAGE
 
 $help = <<HELP;

@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 #ifndef __LAPLACIANGRID__
 #define __LAPLACIANGRID__
 

@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 #ifndef __SURFACE_FUNCS__
 #define __SURFACE_FUNCS__
 

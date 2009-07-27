@@ -1,3 +1,8 @@
+%
+% Copyright Alan C. Evans
+% Professor of Neurology
+% McGill University
+%
 function [lx,ly] = laplace_euler(y0,x0,stop_criteria,dy,dx,h,lattice)
 % LAPLACE_EULER - create a streamline to one surface
 % [LX,LY] = LAPLACE_EULER(Y0,X0,STOP_CRITERIA,DY,DX,H,LATTICE)

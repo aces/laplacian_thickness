@@ -1,3 +1,8 @@
+/*
+   Copyright Alan C. Evans
+   Professor of Neurology
+   McGill University
+*/
 #include "createLaplacianGrid.h"
 #include  <ParseArgv.h>
 
@@ -37,6 +42,7 @@ int main( int argc, char *argv[] ) {
   
   if ( ParseArgv( &argc, argv, argTable, 0 ) || ( argc != 5 )) {
     print_error("Usage: %s in_volume grey_surface.obj white_surface.obj output.mnc \n", argv[0] );
+    print_error("\nCopyright Alan C. Evans\nProfessor of Neurology\nMcGill University\n");
     return( 1 );
   }
   
