@@ -543,7 +543,8 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
     return (sumValue / nsteps );
   }
   else {
-    return( length );
+    // return( length );
+    return( length1 / length );
   }
 }
 
@@ -623,6 +624,7 @@ void laplacianGrid::computeAllThickness(Real h, interpolation evalType) {
         if (this->fixedGrid->getVoxel(v1, v2, v3) > this->innerValue && 
             this->fixedGrid->getVoxel(v1, v2, v3) < this->outerValue) {
           Real result = this->createStreamline(v1, v2, v3, h, evalType);
+          result = ( 1.0 - result ) * this->outerValue;
 	  if (computeAverage == false) {
 	    result *= separations[0];
 	  }
