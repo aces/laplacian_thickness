@@ -26,15 +26,24 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   }
   this->val = NULL;
 
+  int ndims;
+  STRING * dimension_names;
+  get_file_dimension_names( mantleFile, &ndims, &dimension_names );
+  if( ndims != 3 ) {
+    cerr << "Error: Dimension of input volume " << mantleFile <<
+            " must be 3." << endl;
+    exit( 1 );
+  }
+
   // create the grid volume from file
-  this->fixedGrid = new mniVolume(mantleFile, 0.0, 0.0, 3, XYZdimOrder);
+  this->fixedGrid = new mniVolume(mantleFile, 0.0, 0.0, 3, dimension_names);
 
   // construct the volume from the mantle file, but signed
   this->volume = new mniVolume(mantleFile,
 			       0.0,
 			       0.0,
                                3,
-                               XYZdimOrder,
+                               dimension_names,
                                volumeDataType,
                                TRUE,
                                TRUE,
@@ -156,11 +165,21 @@ Real laplacianGrid::evaluateAvgVolume( Real x, Real y, Real z,
 void laplacianGrid::setToAverageAlongStreamlines(char* avgFile, 
 						 nc_type volumeDataType) {
   this->computeAverage = true;
+
+  int ndims;
+  STRING * dimension_names;
+  get_file_dimension_names( avgFile, &ndims, &dimension_names );
+  if( ndims != 3 ) {
+    cerr << "Error: Dimension of input volume " << avgFile <<
+            " must be 3." << endl;
+    exit( 1 );
+  }
+
   this->avgVolume = new mniVolume(avgFile,
 				  0.0,
 				  0.0,
 				  3,
-				  XYZdimOrder,
+                                  dimension_names,
 				  volumeDataType,
 				  TRUE,
 				  TRUE,
