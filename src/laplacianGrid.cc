@@ -26,24 +26,15 @@ laplacianGrid::laplacianGrid(char* mantleFile,
   }
   this->val = NULL;
 
-  int ndims;
-  STRING * dimension_names;
-  get_file_dimension_names( mantleFile, &ndims, &dimension_names );
-  if( ndims != 3 ) {
-    cerr << "Error: Dimension of input volume " << mantleFile <<
-            " must be 3." << endl;
-    exit( 1 );
-  }
-
   // create the grid volume from file
-  this->fixedGrid = new mniVolume(mantleFile, 0.0, 0.0, 3, dimension_names);
+  this->fixedGrid = new mniVolume(mantleFile, 0.0, 0.0, 3, XYZdimOrder);
 
   // construct the volume from the mantle file, but signed
   this->volume = new mniVolume(mantleFile,
 			       0.0,
 			       0.0,
                                3,
-                               dimension_names,
+                               XYZdimOrder,
                                volumeDataType,
                                TRUE,
                                TRUE,
@@ -165,21 +156,11 @@ Real laplacianGrid::evaluateAvgVolume( Real x, Real y, Real z,
 void laplacianGrid::setToAverageAlongStreamlines(char* avgFile, 
 						 nc_type volumeDataType) {
   this->computeAverage = true;
-
-  int ndims;
-  STRING * dimension_names;
-  get_file_dimension_names( avgFile, &ndims, &dimension_names );
-  if( ndims != 3 ) {
-    cerr << "Error: Dimension of input volume " << avgFile <<
-            " must be 3." << endl;
-    exit( 1 );
-  }
-
   this->avgVolume = new mniVolume(avgFile,
 				  0.0,
 				  0.0,
 				  3,
-                                  dimension_names,
+				  XYZdimOrder,
 				  volumeDataType,
 				  TRUE,
 				  TRUE,
@@ -543,8 +524,7 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
     return (sumValue / nsteps );
   }
   else {
-    // return( length );
-    return( length1 / length );
+    return( length );
   }
 }
 
@@ -624,7 +604,6 @@ void laplacianGrid::computeAllThickness(Real h, interpolation evalType) {
         if (this->fixedGrid->getVoxel(v1, v2, v3) > this->innerValue && 
             this->fixedGrid->getVoxel(v1, v2, v3) < this->outerValue) {
           Real result = this->createStreamline(v1, v2, v3, h, evalType);
-          result = ( 1.0 - result ) * this->outerValue;
 	  if (computeAverage == false) {
 	    result *= separations[0];
 	  }

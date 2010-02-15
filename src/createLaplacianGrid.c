@@ -363,16 +363,7 @@ int create_mantle ( char *input_volume_filename,
   Real outside_value = 0;
   Real inside_value = 1;
 
-  int ndims;
-  STRING * dimension_names;
-  get_file_dimension_names( input_volume_filename, &ndims, &dimension_names );
-  if( ndims != 3 ) {
-    fprintf( stderr, "Error: Dimension of input volume %s must be 3.\n", 
-             input_volume_filename );
-    return( 1 );
-  }
-
-  if( input_volume( input_volume_filename, 3, dimension_names,
+  if( input_volume( input_volume_filename, 3, XYZ_dimension_names,
                     NC_BYTE, FALSE, 0.0, 255.0, TRUE, 
                     &white_volume, NULL ) != OK ) {
     return( 1 );

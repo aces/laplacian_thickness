@@ -1,6 +1,5 @@
 New in Release 1.2.0
 * new license Copyright Alan C. Evans
-* keep same dimension order as the original volume
 
 New in Release 1.1.2
 * fix call to input_volume() in createLaplacianGrid.c
