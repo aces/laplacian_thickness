@@ -39,7 +39,7 @@ if ($icbmModel) {
 elsif ($stepValue and $inputVolume) {
     # find the current step sizes and dimlengths
     my @tmp;
-    Spawn(['mincinfo', $inputVolume], stdout => \@mincinfoOutput);
+    Spawn(['mincinfo', $inputVolume], verbose => 0, stdout => \@mincinfoOutput);
     for (my $i = 5; $i <= 7; $i++) {
 	@tmp = split /\s+/, $mincinfoOutput[$i];
 
