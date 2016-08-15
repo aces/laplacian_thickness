@@ -44,6 +44,9 @@ protected:
   mniVolume *avgVolume;
   //! Variable to decide whether to compute average or length
   bool computeAverage;
+  //! Structures for white/grey surfaces to project endpoints 
+  //! of streamline onto
+  polygons_struct * GreyPolygons, * WhitePolygons;
   //! For progress reports
   progress_struct progressReport;
   //! Hold the level of verbosity
@@ -114,11 +117,16 @@ public:
   //! create a streamline at given voxel
   Real createStreamline(Real x0, Real y0, Real z0, Real h, 
 			interpolation evalType);
-
+  //! Initialize data structures for surface projections
+  void initializeProjections( char * greyFile, char * whiteFile );
+  Real ProjectToSurface( Real xb, Real yb, Real zb, 
+                         Real x0, Real y0, Real z0,
+                         polygons_struct * Polygons );
   void computeAllThickness(Real h, 
 			   interpolation evalType = NEAREST_NEIGHBOUR_INTERP);
   //! overloaded to only create streamlines at vertices
-  void computeAllThickness(Real h, char* objFile,
+  void computeAllThickness(Real h, char * objFile, char * greyFile, 
+                           char * whiteFile,
 			   interpolation evalType = NEAREST_NEIGHBOUR_INTERP);
   //  Real createStreamline(int x0, int y0, int z0, int h);
   //! output the volume

@@ -133,9 +133,9 @@ ArgvInfo argTable[] = {
 int main(int argc, char* argv[]) {
 
   if ( ParseArgv(&argc, argv, argTable, 0) ) {
-    cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
+    cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc -from_surfaces grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
     cerr << "\tor" << endl;
-    cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
+    cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t -from_grid laplacian.mnc grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
     cerr << endl << "Copyright Alan C. Evans" << endl
                  << "Professor of Neurology" << endl
                  << "McGill University" << endl;
@@ -144,10 +144,10 @@ int main(int argc, char* argv[]) {
 
   // After parsing, check new value or argc
   if( ( mode == FROM_SURFACES && argc != 4 ) ||
-      ( mode == FROM_GRID && argc != 3 ) ) {
-    cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
+      ( mode == FROM_GRID && argc != 5 ) ) {
+    cerr << endl << "Usage:\t" << argv[0] << " [options] -like sample.mnc -from_surfaces grey_surface.obj \n\twhite_surface.obj output_thickness.mnc" << endl;
     cerr << "\tor" << endl;
-    cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
+    cerr << "Usage:\t" << argv[0] << " [options] -like sample.mnc -object_eval surface.obj\n\t -from_grid laplacian.mnc grey_surface.obj white_surface.obj output_thickness.txt" << endl << endl;
     cerr << endl << "Copyright Alan C. Evans" << endl
                  << "Professor of Neurology" << endl
                  << "McGill University" << endl;
@@ -161,7 +161,6 @@ int main(int argc, char* argv[]) {
   char *out_filename;
   char *grid_file;
   laplacianGrid *grid;
-   
 
   if (mode == FROM_SURFACES) {
 
@@ -189,7 +188,9 @@ int main(int argc, char* argv[]) {
   }
   else if (mode == FROM_GRID) {
     grid_file = argv[1];
-    out_filename = argv[2];
+    grey_surface = argv[2];
+    white_surface = argv[3];
+    out_filename = argv[4];
     grid = new laplacianGrid(grid_file, 
                              inside_value,
                              outside_value,
@@ -197,7 +198,6 @@ int main(int argc, char* argv[]) {
 			     volumeType,
 			     gradientsType);
   }
-
 
   grid->setVerbosity( vValue );
 
@@ -225,21 +225,22 @@ int main(int argc, char* argv[]) {
 
   if ( averageFile == NULL ) {
     cout << "Beginning computation of thicknesses." << endl;
-  }
-  else {
+  } else {
     grid->setToAverageAlongStreamlines( averageFile );
     cout << "Beginning averaging of values along streamlines." << endl;
   }
 
-  
+  cout << "Setting up surface projections..." << endl;
+  grid->initializeProjections( grey_surface, white_surface );
 
   if( objFile == NULL ) {
+    cout << "  Computing at all gray matter voxels" << endl;
     grid->computeAllThickness( hValue, boundaryType );
     grid->output(out_filename);
-  }
-  else {
-    cout << "  Only computing at each vertex" << endl;
-    grid->computeAllThickness( hValue, objFile, boundaryType );
+  } else {
+    cout << "  Computing at each vertex" << endl;
+    grid->computeAllThickness( hValue, objFile, grey_surface,
+                               white_surface, boundaryType );
     grid->output( out_filename, true );
   }
 

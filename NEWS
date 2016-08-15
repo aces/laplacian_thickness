@@ -1,3 +1,7 @@
+New in Release 1.3.0
+* project end points of radial lines to cortical surfaces for
+  more accurate tlaplace thickness
+
 New in Release 1.2.1
 * use verbose=0 for Spawn with stdout to a variable
 

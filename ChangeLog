@@ -1,3 +1,7 @@
+2016-08-15  Claude Lepage      <claude@bic.mni.mcgill.ca>
+	* project end points of radial lines to cortical surfaces 
+          for more accurate tlaplace thickness
+
 2014-10-29  Claude Lepage      <claude@bic.mni.mcgill.ca>
 	* use verbose=0 for Spawn with stdout to a variable
 

@@ -8,7 +8,7 @@
 
 /***
  * functions to deal with vectors of surfaces
- * $Id$
+ * $Id: surface_functions.h,v 1.2 2009/07/27 21:48:03 claude Exp $
  ***/
 
 using namespace std;

@@ -6,6 +6,8 @@
 #include "laplacianGrid.h"
 #include <string>
 
+#define  BINTREE_FACTOR  0.4
+
 // constructor from file
 laplacianGrid::laplacianGrid(char* mantleFile, 
                              int innerValue, 
@@ -439,23 +441,32 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   sumValue = 0;
   nsteps = 0;
 
-  Real eval0 = this->evaluate( x0, y0, z0, evalType );
-  Real evaluation = eval0;
-
   // move towards outside surface first
   oldx = x0;
   oldy = y0;
   oldz = z0;
-  while (evaluation < this->outerValue) {
+
+  int keep_going = 1;
+  while( keep_going ) {
 
     this->getDerivatives( oldx, oldy, oldz, dx, dy, dz );
     mag = dx*dx + dy*dy + dz*dz;
     // test for stagnation point (point not moving due to zero derivative)
     if( mag < 1.0e-6 ) {
-      evaluation = this->outerValue;
+      keep_going = 0;
     } else {
       (*this.*integrationStep)( oldx, oldy, oldz, dx, dy, dz, h,
                                 newx, newy, newz );
+
+      // project new point onto the grey surface.
+      Real fraction = ProjectToSurface( newx, newy, newz, oldx, oldy, oldz,
+                                        this->GreyPolygons );
+      if( fraction >= 0.0 && fraction <= 1.0 ) {
+        newx = ( 1.0 - fraction ) * oldx + fraction * newx;
+        newy = ( 1.0 - fraction ) * oldy + fraction * newy;
+        newz = ( 1.0 - fraction ) * oldz + fraction * newz;
+        keep_going = 0;
+      }
 
       if (computeAverage) {
 	sumValue += this->evaluateAvgVolume( newx, newy, newz, evalType );
@@ -463,9 +474,6 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
       }
       length += sqrt( (newx-oldx)*(newx-oldx) + (newy-oldy)*(newy-oldy) +
                       (newz-oldz)*(newz-oldz) );
-      
-      // find out where we are
-      evaluation = this->evaluate( newx, newy, newz, evalType );
 
       // This is a quick check to make sure that the streamline
       // is not bifurcating in saddle points or getting trapped
@@ -478,7 +486,7 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
                              (newz-z0)*(newz-z0) );
 
       if( length > 4.0 * line_dist ) {
-        evaluation = this->outerValue;
+        keep_going = 0;
       }
 
       oldx = newx;
@@ -491,20 +499,30 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   oldx = x0;
   oldy = y0;
   oldz = z0;
-  evaluation = eval0;
   Real length1 = length;
   length = 0.0;
 
-  while (evaluation > this->innerValue) {
+  keep_going = 1;
+  while( keep_going ) {
 
     this->getDerivatives( oldx, oldy, oldz, dx, dy, dz );
     mag = dx*dx + dy*dy + dz*dz;
     // test for stagnation point (point not moving due to zero derivative)
     if( mag < 1.0e-6 ) {
-      evaluation = this->innerValue;
+      keep_going = 0;
     } else {
       (*this.*integrationStep)( oldx, oldy, oldz, dx, dy, dz, -h,
                                 newx, newy, newz );
+
+      // project new point onto the grey surface.
+      Real fraction = ProjectToSurface( newx, newy, newz, oldx, oldy, oldz,
+                                        this->WhitePolygons );
+      if( fraction >= 0.0 && fraction <= 1.0 ) {
+        newx = ( 1.0 - fraction ) * oldx + fraction * newx;
+        newy = ( 1.0 - fraction ) * oldy + fraction * newy;
+        newz = ( 1.0 - fraction ) * oldz + fraction * newz;
+        keep_going = 0;
+      }
 
       if (computeAverage) {
 	sumValue += this->evaluateAvgVolume( newx, newy, newz, evalType );
@@ -514,7 +532,6 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
 		      (newz-oldz)*(newz-oldz) );
 
       // find out where we are
-      evaluation = this->evaluate( newx, newy, newz, evalType );
 
       // This is a quick check to make sure that the streamline
       // is not bifurcating in saddle points or getting trapped
@@ -527,7 +544,7 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
                              (newz-z0)*(newz-z0) );
 
       if( length > 4.0 * line_dist ) {
-        evaluation = this->innerValue;
+        keep_going = 0;
       }
 
       oldx = newx;
@@ -547,7 +564,97 @@ Real laplacianGrid::createStreamline(Real x0, Real y0, Real z0, Real h,
   }
 }
 
-void laplacianGrid::computeAllThickness( Real h, char *objFile,
+// Setup octree to project end points of streamlines to white
+// and gray surfaces. 
+
+void laplacianGrid::initializeProjections( char * greyFile, 
+                                           char * whiteFile ) {
+
+  File_formats 	   format;
+  int 		   nGreyObjects, nWhiteObjects;
+  Point 	   *points;
+  object_struct    **GreyObjects, **WhiteObjects;
+
+  if( input_graphics_file( greyFile, &format, &nGreyObjects, &GreyObjects )
+      != OK ) {
+    cerr << "ERROR: could not open file " << greyFile << endl;
+    exit(1);
+  }
+  if( nGreyObjects != 1 ) {
+    cerr << "WARNING: more than one object in " << greyFile << endl;
+  }
+  this->GreyPolygons = get_polygons_ptr( GreyObjects[0] );
+  create_polygons_bintree( this->GreyPolygons,
+                    ROUND( (Real)this->GreyPolygons->n_items * 
+                           BINTREE_FACTOR ) );
+
+  if( input_graphics_file( whiteFile, &format, &nWhiteObjects, &WhiteObjects )
+      != OK ) {
+    cerr << "ERROR: could not open file " << whiteFile << endl;
+    exit(1);
+  }
+  if( nWhiteObjects != 1 ) {
+    cerr << "WARNING: more than one object in " << whiteFile << endl;
+  }
+  this->WhitePolygons = get_polygons_ptr( WhiteObjects[0] );
+  create_polygons_bintree( this->WhitePolygons,
+                    ROUND( (Real)this->WhitePolygons->n_items * 
+                           BINTREE_FACTOR ) );
+}
+
+// Project a point onto a boundary surface and return the
+// signed distance.
+
+Real laplacianGrid::ProjectToSurface( Real newx, Real newy, Real newz, 
+                                      Real prevx, Real prevy, Real prevz, 
+                                      polygons_struct * Polygons ) {
+
+  // convert from voxel coordinates to world coordinates
+
+  Real voxel[3];
+  voxel[0] = newx;
+  voxel[1] = newy;
+  voxel[2] = newz;
+  Real * proj = this->fixedGrid->convertVoxelToWorld( voxel );
+  Point  point;
+  point.coords[0] = proj[0];
+  point.coords[1] = proj[1];
+  point.coords[2] = proj[2];
+  delete [] proj;
+
+  // project onto boundary surface (in world coordinates)
+
+  (void)find_closest_polygon_point( &point, Polygons, &point );
+ 
+  // convert back to voxel coordinates 
+  proj = this->fixedGrid->convertWorldToVoxel( point.coords[0],
+                                               point.coords[1],
+                                               point.coords[2] );
+
+  // Is proj between old and new? That is, is the line old:new
+  // intersection the surface?
+
+  Real alpha = -1.0;
+  if( ( prevx - proj[0] ) * ( newx - proj[0] ) +
+      ( prevy - proj[1] ) * ( newy - proj[1] ) +
+      ( prevz - proj[2] ) * ( newz - proj[2] ) < 0.0 ) {
+
+    alpha = sqrt( ( ( prevx - proj[0] ) * ( prevx - proj[0] ) +
+                    ( prevy - proj[1] ) * ( prevy - proj[1] ) +
+                    ( prevz - proj[2] ) * ( prevz - proj[2] ) ) /
+                  ( ( newx - prevx ) * ( newx - prevx ) +
+                    ( newy - prevy ) * ( newy - prevy ) +
+                    ( newz - prevz ) * ( newz - prevz ) ) );
+  }
+
+  delete [] proj;
+
+  return( alpha );
+
+}
+
+void laplacianGrid::computeAllThickness( Real h, char * objFile,
+                                         char * greyFile, char * whiteFile,
 					 interpolation evalType ) {
   File_formats 	format;
   int 		point, nPoints, nObjects;
@@ -579,10 +686,9 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile,
   initialize_progress_report( &this->progressReport, FALSE, nPoints,
 			      "Computing streamlines" );
   for (int i=0; i < nPoints; i++) {
-    voxel = this->fixedGrid->convertWorldToVoxel(
-						 RPoint_x(points[i]),
-						 RPoint_y(points[i]),
-						 RPoint_z(points[i]) );
+    voxel = this->fixedGrid->convertWorldToVoxel( RPoint_x(points[i]),
+						  RPoint_y(points[i]),
+						  RPoint_z(points[i]) );
     
     if (this->fixedGrid->getInterpolatedVoxel(voxel[0], voxel[1], voxel[2]) 
 	< this->outerValue &&
@@ -603,6 +709,7 @@ void laplacianGrid::computeAllThickness( Real h, char *objFile,
     }
     this->thicknessPerVertex[i] = result;
     update_progress_report( &this->progressReport, i );
+    delete [] voxel;
   }
 }
 	

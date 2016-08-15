@@ -6,7 +6,7 @@
 /****
  * Code in this file deals with creating a series of layered surfaces.
  *
- * $Id$
+ * $Id: layered_surfaces.cc,v 1.5 2009/07/27 21:48:03 claude Exp $
  ****/
 
 extern "C" {

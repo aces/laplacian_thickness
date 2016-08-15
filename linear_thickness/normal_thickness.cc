@@ -5,7 +5,7 @@
 */
 /***
  * A revised t_normal thickness implementation
- * $Id$
+ * $Id: normal_thickness.cc,v 1.3 2009/07/27 21:48:03 claude Exp $
  ***/
 
 extern "C" {
